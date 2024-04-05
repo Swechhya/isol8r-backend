@@ -2,42 +2,67 @@ package services
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 	"io"
-	"os"
+	"net/http"
 
+	"github.com/Swechhya/panik-backend/data"
 	"github.com/beatlabs/github-auth/app/inst"
 	"github.com/beatlabs/github-auth/key"
 	"github.com/google/go-github/github"
 )
 
-func AuthenticateGitHub() {
+type GitHubClient struct {
+	Client     *github.Client
+	HttpClient *http.Client
+}
 
-	fmt.Println(os.Getwd())
+var Gh *GitHubClient
 
-	// load from a file
+func SetupGithubClient() error {
 	key, err := key.FromFile("./key.pem")
-	fmt.Println(err)
+	if err != nil {
+		return err
+	}
 
 	install, err := inst.NewConfig("app_id", "install_id", key)
+	if err != nil {
+		return err
+	}
 
 	ctx := context.Background()
-	client1 := install.Client(ctx)
+	httpClient := install.Client(ctx)
+	client := github.NewClient(httpClient)
 
-	// 49284279
-
-	r, err := client1.Get("https://api.github.com/installation/repositories")
-	b, err := io.ReadAll(r.Body)
-	fmt.Println(b)
-	fmt.Println(string(b))
-
-	client := github.NewClient(client1)
-	user, _, err := client.Users.Get(context.Background(), "")
-	if err != nil {
-		fmt.Printf("Error fetching user: %v\n", err)
-		os.Exit(1)
+	Gh = &GitHubClient{
+		HttpClient: httpClient,
+		Client:     client,
 	}
-	repos, _, err := client.Repositories.ListBranches(ctx, *user.Login, "panik-backend", nil)
-	fmt.Println(repos)
+	return nil
+}
 
+func GetRepos(ctx context.Context) ([]*data.Repo, error) {
+	err := SetupGithubClient()
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := Gh.HttpClient.Get("https://api.github.com/installation/repositories")
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := io.ReadAll(r.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	repos := new(data.RepoList)
+
+	err = json.Unmarshal(b, repos)
+	if err != nil {
+		return nil, err
+	}
+
+	return repos.Repositories, nil
 }

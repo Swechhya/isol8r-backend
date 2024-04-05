@@ -8,12 +8,16 @@ import (
 )
 
 func main() {
+
+	// d, _ := services.GetRepos(context.TODO())
+	// fmt.Println(d)
+
 	router := gin.Default()
 	router.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "Server Running...")
 	})
 
-	router.POST("/gh-auth", handlers.GitHubAuthorizeHandler)
+	router.POST("/repos", handlers.GetRepos)
 
 	//feature-enviroment-handler
 	featureEnvironment := router.Group("/fe")

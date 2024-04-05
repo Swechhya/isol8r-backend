@@ -12,3 +12,12 @@ type Resource struct {
 	AppName      string `json:"appName" bson:"appName"`
 	IsAutoUpdate bool   `json:"isAutoUpdate" bson:"isAutoUpdate"`
 }
+
+type RepoList struct {
+	Repositories []*Repo `json:"repositories"`
+}
+
+type Repo struct {
+	Id   int64  `json:"id"`
+	Name string `json:"name"`
+}

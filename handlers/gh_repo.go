@@ -8,17 +8,24 @@ import (
 	"github.com/Swechhya/panik-backend/services"
 )
 
-func GitHubAuthorizeHandler(c *gin.Context) {
-
-	err := services.AuthenticateGitHub()
-	if err != nil {
-
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status": "ERROR",
-		})
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"status": "OK",
+func ErrorReponse(c *gin.Context, err error) {
+	c.JSON(http.StatusInternalServerError, gin.H{
+		"error": err.Error(),
 	})
+}
+
+func SuccessResponse(c *gin.Context, data any) {
+	c.JSON(http.StatusOK, gin.H{
+		"data": data,
+	})
+}
+
+func GetRepos(c *gin.Context) {
+	repos, err := services.GetRepos(c)
+	if err != nil {
+		ErrorReponse(c, err)
+		return
+	}
+	SuccessResponse(c, repos)
+	return
 }
