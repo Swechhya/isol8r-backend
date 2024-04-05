@@ -1,12 +1,17 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/Swechhya/panik-backend/handlers"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	router := gin.Default()
+	router.GET("/", func(c *gin.Context) {
+		c.String(http.StatusOK, "Server Running...")
+	})
 
 	router.POST("/gh-auth", handlers.GitHubAuthorizeHandler)
 

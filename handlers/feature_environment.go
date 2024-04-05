@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/Swechhya/panik-backend/data"
 	"github.com/Swechhya/panik-backend/services"
 	"github.com/gin-gonic/gin"
 )
@@ -28,9 +29,16 @@ func FEListHandler(c *gin.Context) {
 }
 
 func FECreateHandler(c *gin.Context) {
-	//TODO : CREATE FEATURE ENVIRONMENTS
+
+	var featureEnv data.FeatureEnvironment
+	if err := c.ShouldBindJSON(&featureEnv); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"status": "OK",
+		"status":   "OK",
+		"resource": featureEnv,
 	})
 }
 
