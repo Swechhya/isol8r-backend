@@ -1,16 +1,19 @@
 package data
 
 type FeatureEnvironment struct {
-	Name      string     `json:"name" bson:"name"`
-	DBType    string     `json:"dbType" bson:"dbType"`
-	CreatedAt string     `json:"createdAt" bson:"createdAt"`
-	CreatedBy string     `json:"createdBy" bson:"createdBy"`
-	Resources []Resource `json:"resources" bson:"resources"`
+	Name      string     `json:"name"`
+	FeatureID string     `json:"feature_id"`
+	DBType    string     `json:"dbType"`
+	CreatedAt string     `json:"createdAt"`
+	CreatedBy string     `json:"createdBy"`
+	Resources []Resource `json:"resources"`
 }
 
 type Resource struct {
-	AppName      string `json:"appName" bson:"appName"`
-	IsAutoUpdate bool   `json:"isAutoUpdate" bson:"isAutoUpdate"`
+	FeatureEnvID int    `json:"feature_environment_id"`
+	AppName      string `json:"appName"`
+	IsAutoUpdate bool   `json:"isAutoUpdate"`
+	Link         string `json:"link"`
 }
 
 type RepoList struct {
