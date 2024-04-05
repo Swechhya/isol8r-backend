@@ -14,6 +14,7 @@ import (
 	"github.com/beatlabs/github-auth/app/inst"
 	"github.com/beatlabs/github-auth/jwt"
 	"github.com/beatlabs/github-auth/key"
+	"github.com/doug-martin/goqu/v9"
 	"github.com/google/go-github/github"
 )
 
@@ -147,12 +148,19 @@ func GetInstallationToken(ctx context.Context) (string, error) {
 
 func saveClientConfigToDB(installID, privateKey string) error {
 	db := db.DB()
-	_, err := db.Exec(`
-        INSERT INTO core_config (key, value)
-        VALUES 
-            ('installID', $1),
-            ('privateKey', $2)
-    `, installID, privateKey)
+
+	dq := goqu.Insert("core_config").
+		Cols("key", "value").
+		Vals(goqu.Vals{"installID", installID},
+			goqu.Vals{"privateKey", privateKey},
+		)
+
+	insertSql, args, err := dq.ToSQL()
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec(insertSql, args...)
+
 	if err != nil {
 		return err
 	}
