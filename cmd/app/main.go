@@ -29,7 +29,7 @@ func main() {
 	{
 		gh.POST("/setup", handlers.SetupGithub)
 		gh.POST("/repos", handlers.GetRepos)
-		gh.GET("/branches", handlers.GetBranches)
+		gh.GET("/branches/:repo", handlers.GetBranches)
 	}
 
 	//feature-enviroment-handler

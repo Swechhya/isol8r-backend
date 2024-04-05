@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/Swechhya/panik-backend/data"
 	"github.com/Swechhya/panik-backend/services"
 )
 
@@ -21,13 +22,19 @@ func SuccessResponse(c *gin.Context, data any) {
 }
 
 func SetupGithub(c *gin.Context) {
-	err := services.SetupGithubClient()
+	var config *data.GithubClientSetup
+	if err := c.ShouldBindJSON(&config); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := services.SetupGithubClient(config)
 	if err != nil {
 		ErrorReponse(c, err)
 		return
 	}
+
 	SuccessResponse(c, "success")
-	return
 }
 
 func GetRepos(c *gin.Context) {
@@ -41,13 +48,8 @@ func GetRepos(c *gin.Context) {
 }
 
 func GetBranches(c *gin.Context) {
-	var body map[string]string
-	if err := c.ShouldBindJSON(&body); err != nil {
-		ErrorReponse(c, err)
-		return
-	}
-	b := body["branch"]
-	branches, err := services.GetBranches(c, b)
+	repo := c.Param("repo")
+	branches, err := services.GetBranches(c, repo)
 	if err != nil {
 		ErrorReponse(c, err)
 	}

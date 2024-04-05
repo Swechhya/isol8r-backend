@@ -3,12 +3,14 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"time"
 
 	"github.com/Swechhya/panik-backend/data"
+	"github.com/Swechhya/panik-backend/internal/db"
 	"github.com/beatlabs/github-auth/app/inst"
 	"github.com/beatlabs/github-auth/jwt"
 	"github.com/beatlabs/github-auth/key"
@@ -23,13 +25,24 @@ type GitHubClient struct {
 var Gh *GitHubClient
 var User *github.User
 
-func SetupGithubClient() error {
+func SetupGithubClient(config *data.GithubClientSetup) error {
 	key, err := key.FromFile("./key.pem")
 	if err != nil {
 		return err
 	}
 
-	install, err := inst.NewConfig("app_id", "install_id", key)
+	appID := config.AppID
+	instID := config.InstID
+	if appID == "" || instID == "" {
+		return errors.New("appID or instID missing in configs")
+	}
+
+	install, err := inst.NewConfig(appID, instID, key)
+	if err != nil {
+		return err
+	}
+
+	err = saveClientConfigToDB(appID, instID)
 	if err != nil {
 		return err
 	}
@@ -43,11 +56,6 @@ func SetupGithubClient() error {
 		Client:     client,
 	}
 
-	user, _, err := client.Users.Get(context.Background(), "")
-	if err != nil {
-		return err
-	}
-	User = user
 	return nil
 }
 
@@ -69,11 +77,23 @@ func GetRepos(ctx context.Context) ([]*data.Repo, error) {
 		return nil, err
 	}
 
+	//insert into table
+	db := db.DB()
+	for _, repo := range repos.Repositories {
+		_, err := db.Exec(`
+        INSERT INTO repositories (name, full_name, user_login, s3_uri, created_by)
+        VALUES ($1, $2, $3, $4, $5)
+    `, repo.Name, repo.Name, "", "", "")
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return repos.Repositories, nil
 }
 
-func GetBranches(ctx context.Context, branch string) ([]*github.Branch, error) {
-	branches, _, err := Gh.Client.Repositories.ListBranches(ctx, *User.Login, branch, nil)
+func GetBranches(ctx context.Context, repo string) ([]*github.Branch, error) {
+	branches, _, err := Gh.Client.Repositories.ListBranches(ctx, *User.Login, repo, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -123,4 +143,18 @@ func GetInstallationToken(ctx context.Context) (string, error) {
 	}
 
 	return token.Token, nil
+}
+
+func saveClientConfigToDB(appID, instID string) error {
+	db := db.DB()
+	_, err := db.Exec(`
+        INSERT INTO core_config (key, value)
+        VALUES 
+            ('app_id', $1),
+            ('inst_id', $2)
+    `, appID, instID)
+	if err != nil {
+		return err
+	}
+	return nil
 }
