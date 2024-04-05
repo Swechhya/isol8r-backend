@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/Swechhya/panik-backend/services"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,6 +16,12 @@ func AppListHandler(c *gin.Context) {
 
 func FEListHandler(c *gin.Context) {
 	//TODO : LIST FEATURE ENVIRONMENTS
+	if err := services.GetAllFeatureEnvironments(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status": "ERROR",
+		})
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"status": "OK",
 	})
