@@ -31,18 +31,18 @@ func SetupGithubClient(config *data.GithubClientSetup) error {
 		return err
 	}
 
-	appID := config.AppID
-	instID := config.InstID
-	if appID == "" || instID == "" {
-		return errors.New("appID or instID missing in configs")
+	installID := config.InstallID
+	privateKey := config.PrivateKey
+	if installID == "" || privateKey == "" {
+		return errors.New("installID or privateKey missing in configs")
 	}
 
-	install, err := inst.NewConfig(appID, instID, key)
+	install, err := inst.NewConfig(installID, privateKey, key)
 	if err != nil {
 		return err
 	}
 
-	err = saveClientConfigToDB(appID, instID)
+	err = saveClientConfigToDB(installID, privateKey)
 	if err != nil {
 		return err
 	}
@@ -145,14 +145,14 @@ func GetInstallationToken(ctx context.Context) (string, error) {
 	return token.Token, nil
 }
 
-func saveClientConfigToDB(appID, instID string) error {
+func saveClientConfigToDB(installID, privateKey string) error {
 	db := db.DB()
 	_, err := db.Exec(`
         INSERT INTO core_config (key, value)
         VALUES 
-            ('app_id', $1),
-            ('inst_id', $2)
-    `, appID, instID)
+            ('installID', $1),
+            ('privateKey', $2)
+    `, installID, privateKey)
 	if err != nil {
 		return err
 	}

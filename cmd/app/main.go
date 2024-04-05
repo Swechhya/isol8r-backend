@@ -18,6 +18,8 @@ func main() {
 	}
 
 	router := gin.Default()
+	router.Use(corsHandler())
+
 	router.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "Server Running...")
 	})
@@ -45,6 +47,19 @@ func main() {
 	// PORT environment variable was defined.
 	router.Run()
 	// router.Run(":3000") for a hard coded port
+}
+
+func corsHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Authorization")
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(http.StatusOK)
+			return
+		}
+		c.Next()
+	}
 }
 
 func Setup() error {

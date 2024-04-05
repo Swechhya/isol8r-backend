@@ -8,7 +8,10 @@ require (
 	github.com/google/go-github v17.0.0+incompatible
 )
 
-require github.com/pkg/errors v0.8.1 // indirect
+require (
+	github.com/pkg/errors v0.8.1 // indirect
+	github.com/rs/cors v1.10.1 // indirect
+)
 
 require (
 	github.com/bytedance/sonic v1.11.3 // indirect
