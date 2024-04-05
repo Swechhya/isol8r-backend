@@ -3,11 +3,14 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/Swechhya/panik-backend/data"
 	"github.com/beatlabs/github-auth/app/inst"
+	"github.com/beatlabs/github-auth/jwt"
 	"github.com/beatlabs/github-auth/key"
 	"github.com/google/go-github/github"
 )
@@ -75,4 +78,49 @@ func GetBranches(ctx context.Context, branch string) ([]*github.Branch, error) {
 		return nil, err
 	}
 	return branches, nil
+}
+
+func GetInstallationToken(ctx context.Context) (string, error) {
+
+	key, err := key.FromFile("./key.pem")
+	if err != nil {
+		return "", err
+	}
+	jt := jwt.JWT{AppID: "app_id", PrivateKey: key, Expires: time.Minute * 10}
+	je, err := jt.Payload()
+	if err != nil {
+		return "", err
+	}
+
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", fmt.Sprintf("https://api.github.com/app/installations/%s/access_tokens", "install_id"), nil)
+	if err != nil {
+		return "", nil
+	}
+
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", je))
+	req.Header.Add("Accept", "application/vnd.github.v3+json")
+
+	r, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+
+	if r.StatusCode < 200 && r.StatusCode >= 400 {
+		return "", fmt.Errorf("error executing request")
+	}
+
+	b, err := io.ReadAll(r.Body)
+	if err != nil {
+		return "", err
+	}
+
+	token := new(data.InstallationToken)
+
+	err = json.Unmarshal(b, token)
+	if err != nil {
+		return "", err
+	}
+
+	return token.Token, nil
 }
