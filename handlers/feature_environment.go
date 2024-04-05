@@ -9,7 +9,7 @@ import (
 )
 
 func AppListHandler(c *gin.Context) {
-	//TODO : LIST REPOS
+
 	c.JSON(http.StatusOK, gin.H{
 		"status": "OK",
 	})
@@ -17,7 +17,8 @@ func AppListHandler(c *gin.Context) {
 
 func FEListHandler(c *gin.Context) {
 	//TODO : LIST FEATURE ENVIRONMENTS
-	if err := services.GetAllFeatureEnvironments(); err != nil {
+	fe, err := services.GetAllFeatureEnvironments()
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status": "ERROR",
 		})
@@ -25,6 +26,7 @@ func FEListHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"status": "OK",
+		"data":   fe,
 	})
 }
 
