@@ -25,6 +25,13 @@ func main() {
 	router.POST("/config/create", handlers.ConfigHandler)
 	router.POST("/repos", handlers.GetRepos)
 
+	gh := router.Group("/gh")
+	{
+		gh.POST("/setup", handlers.SetupGithub)
+		gh.POST("/repos", handlers.GetRepos)
+		gh.GET("/branches", handlers.GetBranches)
+	}
+
 	//feature-enviroment-handler
 	featureEnvironment := router.Group("/fe")
 	{
