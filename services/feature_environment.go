@@ -1,7 +1,7 @@
 package services
 
 import (
-	"time"
+	"fmt"
 
 	"github.com/Swechhya/panik-backend/data"
 	"github.com/Swechhya/panik-backend/internal/db"
@@ -9,40 +9,31 @@ import (
 )
 
 func GetAllFeatureEnvironments() ([]*data.FeatureEnvironment, error) {
-	//Dummy data
-	envLists := []*data.FeatureEnvironment{
-		{
-			Name:      "Environment 1",
-			DBType:    "mongodb",
-			CreatedAt: time.Now().Format(time.RFC3339),
-			CreatedBy: "User 1",
-			Resources: []data.Resource{
-				{
-					AppName:      "App 1",
-					IsAutoUpdate: true,
-				},
-				{
-					AppName:      "App 2",
-					IsAutoUpdate: false,
-				},
-			},
-		},
-		{
-			Name:      "Environment 2",
-			DBType:    "mysql",
-			CreatedAt: time.Now().Format(time.RFC3339),
-			CreatedBy: "User 2",
-			Resources: []data.Resource{
-				{
-					AppName:      "App 3",
-					IsAutoUpdate: true,
-				},
-				{
-					AppName:      "App 4",
-					IsAutoUpdate: true,
-				},
-			},
-		},
+	query := goqu.From("feature_environments").Select("name", "feature_id", "db_type", "created_at", "created_by")
+	fmt.Println(query.ToSQL())
+	selectSQL, _, err := query.ToSQL()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := db.DB().Query(selectSQL)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var envLists []*data.FeatureEnvironment
+
+	for rows.Next() {
+		var fe data.FeatureEnvironment
+		if err := rows.Scan(&fe.Name, &fe.FeatureID, &fe.DBType, &fe.CreatedAt, &fe.CreatedBy); err != nil {
+			return nil, err
+		}
+
+		envLists = append(envLists, &fe)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return envLists, nil

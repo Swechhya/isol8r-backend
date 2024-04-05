@@ -1,11 +1,14 @@
 package data
 
+import "time"
+
 type FeatureEnvironment struct {
 	Name      string     `json:"name"`
 	FeatureID string     `json:"feature_id"`
 	DBType    string     `json:"dbType"`
-	CreatedAt string     `json:"createdAt"`
 	CreatedBy string     `json:"createdBy"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
 	Resources []Resource `json:"resources"`
 }
 
