@@ -37,7 +37,8 @@ type MatchLabels struct {
 }
 
 type ContainerPort struct {
-	ContainerPort int `yaml:"containerPort,omitempty"`
+	ContainerPort int    `yaml:"containerPort,omitempty"`
+	Name          string `yaml:"name,omitempty"`
 }
 
 type Container struct {
@@ -68,8 +69,10 @@ type DeploymentConfig struct {
 //
 
 type Port struct {
-	Name string `yaml:"name,omitempty"`
-	Port int    `yaml:"port,omitempty"`
+	Name       string `yaml:"name,omitempty"`
+	Port       int    `yaml:"port,omitempty"`
+	TargetPort string `yaml:"targetPort,omitempty"`
+	Protocol   string `yaml:"protocol,omitempty"`
 }
 
 type Service struct {
@@ -90,9 +93,38 @@ type Spec struct {
 
 type Rule struct {
 	Host string `yaml:"host,omitempty"`
+	Http Http   `yaml:"http,omitempty"`
+}
+
+type Http struct {
+	Paths []Path `yaml:"paths,omitempty"`
 }
 
 type Secret struct {
 	Name     string   `yaml:"name,omitempty"`
 	Literals []string `yaml:"literals,omitempty"`
 }
+
+type Backend struct {
+	Service BackendService `ymal:"service,omitempty"`
+}
+
+type BackendService struct {
+	ServiceName string `yaml:"name,omitempty"`
+	Port        Port   `yaml:"port,omitempty"`
+}
+
+type Path struct {
+	Path     string  `yaml:"path,omitempty"`
+	PathType string  `yaml:"pathType,omitempty"`
+	Backend  Backend `yaml:"backend,omitempty"`
+}
+
+// type HTTPRule struct {
+// 	Host   string `yaml:"host,omitempty"`
+// 	Paths  []Path `yaml:"paths,omitempty"`
+// }
+
+// type Ingress struct {
+// 	Rules []HTTPRule `yaml:"rules,omitempty"`
+// }
