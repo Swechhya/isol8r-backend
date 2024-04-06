@@ -35,7 +35,8 @@ func FECreateHandler(c *gin.Context) {
 		return
 	}
 
-	if err := services.CreateFeatureEnvironment(fe); err != nil {
+	isReDeploy := false
+	if err := services.CreateFeatureEnvironment(fe, isReDeploy); err != nil {
 		ErrorReponse(c, err)
 		return
 	}
@@ -67,18 +68,14 @@ func FERedeployHandler(c *gin.Context) {
 		return
 	}
 
-	if err := services.DeleteFeatureEnvironment(id); err != nil {
-		ErrorReponse(c, err)
-		return
-	}
-
 	fe, err := services.GetFeatureEnvironmentById(id)
 	if err != nil {
 		ErrorReponse(c, err)
 		return
 	}
 
-	if err := services.CreateFeatureEnvironment(*fe); err != nil {
+	isReDeploy := true
+	if err := services.CreateFeatureEnvironment(*fe, isReDeploy); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -106,7 +103,8 @@ func FEEditHandler(c *gin.Context) {
 		return
 	}
 
-	if err := services.CreateFeatureEnvironment(fe); err != nil {
+	isReDeploy := true
+	if err := services.CreateFeatureEnvironment(fe, isReDeploy); err != nil {
 		ErrorReponse(c, err)
 		return
 	}

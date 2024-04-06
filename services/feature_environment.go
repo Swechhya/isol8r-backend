@@ -79,7 +79,7 @@ func GetAllFeatureEnvironments() ([]*data.FeatureEnvironment, error) {
 
 func GetFeatureEnvironmentById(id int) (*data.FeatureEnvironment, error) {
 	query := goqu.From("feature_environments").
-		Select("name", "identifier", "description", "db_type", "created_at", "created_by").
+		Select("id", "name", "identifier", "description", "db_type", "created_at", "created_by").
 		Where(goqu.Ex{"id": id})
 
 	selectSQL, _, err := query.ToSQL()
@@ -89,7 +89,7 @@ func GetFeatureEnvironmentById(id int) (*data.FeatureEnvironment, error) {
 
 	fe := new(data.FeatureEnvironment)
 	var description sql.NullString
-	err = db.DB().QueryRow(selectSQL).Scan(&fe.Name, &fe.Identifier, &description, &fe.DBType, &fe.CreatedAt, &fe.CreatedBy)
+	err = db.DB().QueryRow(selectSQL).Scan(&fe.ID, &fe.Name, &fe.Identifier, &description, &fe.DBType, &fe.CreatedAt, &fe.CreatedBy)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,13 @@ func GetFeatureEnvironmentById(id int) (*data.FeatureEnvironment, error) {
 
 }
 
-func CreateFeatureEnvironment(fe data.FeatureEnvironment) error {
+func CreateFeatureEnvironment(fe data.FeatureEnvironment, reDeploy bool) error {
+	if reDeploy {
+		if err := DeleteFeatureEnvironment(fe.ID); err != nil {
+			return err
+		}
+	}
+
 	if fe.Identifier == "" {
 		return fmt.Errorf("empty feature identifier")
 	}
@@ -185,7 +191,7 @@ func CreateFeatureEnvironment(fe data.FeatureEnvironment) error {
 func DeleteFeatureEnvironment(feID int) error {
 	db := db.DB()
 
-	q := goqu.From("resources").Select("identifier")
+	q := goqu.From("feature_environments").Select("identifier")
 	sql, args, err := q.ToSQL()
 	for err != nil {
 		return err
