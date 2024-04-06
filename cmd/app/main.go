@@ -34,6 +34,8 @@ func main() {
 		featureEnvironment.GET("/list", handlers.FEListHandler)
 		featureEnvironment.POST("/create", handlers.FECreateHandler)
 		featureEnvironment.POST("/delete/:id", handlers.FEDeleteHandler)
+		featureEnvironment.POST("/redeploy/:id", handlers.FERedeployHandler)
+		featureEnvironment.POST("/edit/:id", handlers.FEEditHandler)
 	}
 
 	// By default it serves on :8080 unless a
