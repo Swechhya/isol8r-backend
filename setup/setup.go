@@ -1,4 +1,4 @@
-package main
+package setup
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func setup() {
+func Setup() {
 	loadEnv()
 
 	err := setupDatabase()

@@ -5,11 +5,12 @@ import (
 
 	"github.com/Swechhya/panik-backend/handlers"
 	"github.com/Swechhya/panik-backend/middleware"
+	"github.com/Swechhya/panik-backend/setup"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	setup()
+	setup.Setup()
 
 	router := gin.Default()
 	router.Use(middleware.CorsHandler())
