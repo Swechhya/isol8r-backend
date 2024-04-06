@@ -6,7 +6,7 @@ type Config struct {
 }
 
 type GithubClientSetup struct {
-	ClientID     string `json:"clientId"`
+	ClientID     string `json:"clientID"`
 	ClientSecret string `json:"clientSecret"`
 	InstallID    string `json:"installID"`
 	PrivateKey   string `json:"privateKey"`
