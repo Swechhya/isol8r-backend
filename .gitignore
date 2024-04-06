@@ -2,3 +2,5 @@ vendor
 .vscode
 key.pem
 .DS_Store
+build-manifest/overlay
+deploy-manifest/overlay

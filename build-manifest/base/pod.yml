@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kaniko
+spec:
+  containers:
+    - name: kaniko
+      image: gcr.io/kaniko-project/executor:latest
+      args:
+        - "--dockerfile=Dockerfile"
+        - "--context=git://github.com/Swechhya/ci-cd-demo.git"
+        - "--destination=654654451390.dkr.ecr.us-east-1.amazonaws.com/test:be-test1"
+      env:
+        - name: GIT_USERNAME
+          value: "x-access-token"
+#       volumeMounts:
+#         # when not using instance role
+#         - name: aws-secret
+#           mountPath: /root/.aws/
+#   restartPolicy: Never
+#   volumes:
+#     # when not using instance role
+#     - name: aws-secret
+#       secret:
+#         secretName: aws-secret

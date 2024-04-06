@@ -1,8 +1,11 @@
 package services
 
 import (
+	"os"
+
 	"github.com/Swechhya/panik-backend/internal/db"
 	"github.com/doug-martin/goqu/v9"
+	"gopkg.in/yaml.v3"
 )
 
 var coreConfig map[string]string
@@ -75,4 +78,17 @@ func LoadConfigOnInitialSetup() error {
 
 	return nil
 
+}
+
+func saveYaml(filename string, d any) error {
+	data, err := yaml.Marshal(d)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(filename, data, 0666)
+	if err != nil {
+		return err
+	}
+	return nil
 }
