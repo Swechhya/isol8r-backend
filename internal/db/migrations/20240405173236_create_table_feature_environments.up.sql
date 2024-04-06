@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS resources (
     branch VARCHAR(255) NOT NULL,
     link VARCHAR(255),
     is_auto_update BOOLEAN,
+    port int,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
