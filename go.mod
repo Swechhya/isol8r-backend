@@ -3,14 +3,15 @@ module github.com/Swechhya/panik-backend
 go 1.21.7
 
 require (
+	github.com/aws/aws-sdk-go-v2 v1.26.1
 	github.com/beatlabs/github-auth v0.0.0-20240318193700-b9f9970f423b
 	github.com/doug-martin/goqu/v9 v9.19.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/go-github v17.0.0+incompatible
+	github.com/joho/godotenv v1.5.1
 )
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.26.1 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.2 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.5 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.5 // indirect
