@@ -10,4 +10,5 @@ type GithubClientSetup struct {
 	ClientSecret string `json:"clientSecret"`
 	InstallID    string `json:"installID"`
 	PrivateKey   string `json:"privateKey"`
+	AppID        string `json:"appID"`
 }

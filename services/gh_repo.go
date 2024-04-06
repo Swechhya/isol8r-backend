@@ -33,7 +33,8 @@ func SetupGithubClient(ctx context.Context, config *data.GithubClientSetup) erro
 
 	installID := config.InstallID
 	privateKey := config.PrivateKey
-	if installID == "" || privateKey == "" {
+	appID := config.AppID
+	if installID == "" || privateKey == "" || appID == "" {
 		return errors.New("installID or privateKey missing in configs")
 	}
 
@@ -47,6 +48,11 @@ func SetupGithubClient(ctx context.Context, config *data.GithubClientSetup) erro
 		return err
 	}
 	err = AddConfig("privateKey", privateKey)
+	if err != nil {
+		return err
+	}
+
+	err = AddConfig("appID", appID)
 	if err != nil {
 		return err
 	}
@@ -109,7 +115,7 @@ func GetInstallationToken(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	jt := jwt.JWT{AppID: "app_id", PrivateKey: key, Expires: time.Minute * 10}
+	jt := jwt.JWT{AppID: GetConfig("appID"), PrivateKey: key, Expires: time.Minute * 10}
 	je, err := jt.Payload()
 	if err != nil {
 		return "", err
