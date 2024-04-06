@@ -162,6 +162,7 @@ func GenerateBuildManifest(branch string) error {
 	repoUrl := "git://github.com/Swechhya/ci-cd-demo.git"
 
 	kustomize := KustomizationConfig{
+		Namespace: branch,
 		Resources: []string{
 			"../../base",
 		},
@@ -172,7 +173,7 @@ func GenerateBuildManifest(branch string) error {
 			{
 				Name: "git-token",
 				Literals: []string{
-					fmt.Sprintf("GIT-PASSWORD=%s", gitPass),
+					fmt.Sprintf("GIT_PASSWORD=%s", gitPass),
 				},
 			},
 		},
@@ -199,11 +200,29 @@ func GenerateBuildManifest(branch string) error {
 							Name:  "GIT_USERNAME",
 							Value: "x-access-token",
 						},
+						{
+							Name: "GIT_PASSWORD",
+							ValueFrom: ValueFrom{
+								SecretKeyRef: map[string]string{
+									"name": "git-token",
+									"key":  "GIT_PASSWORD",
+								},
+							},
+						},
 					},
 				},
 			},
 		},
 	}
+
+	ns := DeploymentConfig{
+		APIVersion: "v1",
+		Kind:       "Namespace",
+		Metadata: Metadata{
+			Name: branch,
+		},
+	}
+
 	err = saveYaml(filepath.Join(dir, "kustomization.yml"), kustomize)
 	if err != nil {
 		return err

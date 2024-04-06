@@ -1,13 +1,18 @@
 package services
 
 type Resource struct {
-	Path string `yaml:"path",omitempty`
+	Path string `yaml:"path,omitempty"`
 }
 
 type Environment struct {
-	Name  string   `yaml:"name,omitempty"`
-	Value string   `yaml:"value,omitempty"`
-	Envs  []string `yaml:"envs,omitempty"`
+	Name      string    `yaml:"name,omitempty"`
+	Value     string    `yaml:"value,omitempty"`
+	ValueFrom ValueFrom `yaml:"valueFrom,omitempty"`
+	Envs      []string  `yaml:"envs,omitempty"`
+}
+
+type ValueFrom struct {
+	SecretKeyRef map[string]string `yaml:"secretKeyRef,omitempty"`
 }
 
 type KustomizationConfig struct {
