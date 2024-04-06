@@ -1,7 +1,6 @@
 package services
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"os/exec"
@@ -78,26 +77,64 @@ func GetAllFeatureEnvironments() ([]*data.FeatureEnvironment, error) {
 }
 
 func GetFeatureEnvironmentById(id int) (*data.FeatureEnvironment, error) {
-	query := goqu.From("feature_environments").
-		Select("id", "name", "identifier", "description", "db_type", "created_at", "created_by").
-		Where(goqu.Ex{"id": id})
+	query := goqu.
+		From(goqu.T("feature_environments")).
+		Select(
+			"feature_environments.id",
+			"feature_environments.name",
+			"feature_environments.identifier",
+			"feature_environments.created_at",
+			"feature_environments.created_by",
+			"resources.feature_environment_id",
+			"resources.repo_id",
+			"resources.is_auto_update",
+			"resources.branch",
+			"resources.link",
+			"resources.port",
+		).
+		LeftJoin(goqu.T("resources"), goqu.On(goqu.I("feature_environments.id").Eq(goqu.I("resources.feature_environment_id")))).
+		Where(goqu.Ex{"feature_environments.id": id})
 
 	selectSQL, _, err := query.ToSQL()
 	if err != nil {
 		return nil, err
 	}
 
-	fe := new(data.FeatureEnvironment)
-	var description sql.NullString
-	err = db.DB().QueryRow(selectSQL).Scan(&fe.ID, &fe.Name, &fe.Identifier, &description, &fe.DBType, &fe.CreatedAt, &fe.CreatedBy)
+	rows, err := db.DB().Query(selectSQL)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
-	fe.Description = description.String
+	var fe *data.FeatureEnvironment
+	resources := make([]data.Resource, 0)
+
+	for rows.Next() {
+		var tempFE data.FeatureEnvironment
+		var tempRes data.Resource
+		if err := rows.Scan(
+			&tempFE.ID, &tempFE.Name, &tempFE.Identifier, &tempFE.CreatedAt, &tempFE.CreatedBy,
+			&tempRes.FeatureEnvID, &tempRes.RepoID, &tempRes.IsAutoUpdate, &tempRes.Branch, &tempRes.Link, &tempRes.Port,
+		); err != nil {
+			return nil, err
+		}
+
+		if fe == nil {
+			fe = &tempFE
+		}
+
+		resources = append(resources, tempRes)
+	}
+
+	if fe != nil {
+		fe.Resources = resources
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 
 	return fe, nil
-
 }
 
 func CreateFeatureEnvironment(fe data.FeatureEnvironment, reDeploy bool) error {
