@@ -1,10 +1,23 @@
-FROM golang:1.22.2-alpine3.19
+FROM golang:1.22.2
 
 WORKDIR /server
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o server ./cmd/main.go
+RUN go get ./...
+
+# Set flags for ECR
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o server ./cmd/app/main.go
+
+RUN chmod +x ./server
+
+RUN curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+
+RUN curl -LO "https://dl.k8s.io/release/$(curl -sL https://dl.k8s.io/release/stable.txt)/bin/$os/kubectl"
+
+RUN chmod +x ./kubectl
+
+RUN mv ./kubectl /usr/local/bin/kubectl
 
 EXPOSE 8080
 

@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
@@ -22,8 +21,8 @@ type S3Config struct {
 func GetClient() *S3Client {
 	s3Config := GetS3Config()
 	opts := s3.Options{
-		Region:      *aws.String(s3Config.Region),
-		Credentials: aws.NewCredentialsCache(credentials.NewStaticCredentialsProvider(s3Config.AccessKey, s3Config.SecretKey, s3Config.SessionToken)),
+		Region: *aws.String(s3Config.Region),
+		// Credentials: aws.NewCredentialsCache(credentials.NewStaticCredentialsProvider(s3Config.AccessKey, s3Config.SecretKey, s3Config.SessionToken)),
 	}
 
 	// Create an Amazon S3 service client
