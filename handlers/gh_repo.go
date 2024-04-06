@@ -36,12 +36,10 @@ func SetupGithub(c *gin.Context) {
 
 	bucketName := "panik-private-key"
 	bucketKey := "key.pem"
-	accessKey := "ASIAZQ3DSF27AOODHVWH"
-	secretKey := "M6yMnGPB7hLf9YdVxEbatoSfS16eA0Q915ZayfMh"
-	region := "us-east-1"
 	filePath, _ := os.Getwd()
 	fullFilePath := filepath.Join(filePath, bucketKey)
-	client := s3.GetClient(accessKey, secretKey, region)
+
+	client := s3.GetClient()
 	err := client.DownloadFileToPath(c.Request.Context(), bucketName, bucketKey, fullFilePath)
 	if err != nil {
 		ErrorReponse(c, err)
