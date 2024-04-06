@@ -2,3 +2,4 @@ vendor
 .vscode
 key.pem
 .DS_Store
+.env
