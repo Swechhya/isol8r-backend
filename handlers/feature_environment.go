@@ -67,6 +67,11 @@ func FERedeployHandler(c *gin.Context) {
 		return
 	}
 
+	if err := services.DeleteFeatureEnvironment(id); err != nil {
+		ErrorReponse(c, err)
+		return
+	}
+
 	fe, err := services.GetFeatureEnvironmentById(id)
 	if err != nil {
 		ErrorReponse(c, err)
