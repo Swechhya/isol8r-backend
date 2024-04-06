@@ -1,6 +1,7 @@
 package services
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"os/exec"
@@ -87,10 +88,13 @@ func GetFeatureEnvironmentById(id int) (*data.FeatureEnvironment, error) {
 	}
 
 	fe := new(data.FeatureEnvironment)
-	err = db.DB().QueryRow(selectSQL).Scan(&fe.Name, &fe.Identifier, &fe.Description, &fe.DBType, &fe.CreatedAt, &fe.CreatedBy)
+	var description sql.NullString
+	err = db.DB().QueryRow(selectSQL).Scan(&fe.Name, &fe.Identifier, &description, &fe.DBType, &fe.CreatedAt, &fe.CreatedBy)
 	if err != nil {
 		return nil, err
 	}
+
+	fe.Description = description.String
 
 	return fe, nil
 
