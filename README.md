@@ -38,7 +38,7 @@ go get .
 
 ## Future Enhancements
 
-- Support databse other than postgres
+- Support database other than postgres
 - Support single repo that contain both client and server code
 - Support other access control platforms like Gitlab, BitBucket etc.
 - Add support of secret manager in feature environment
