@@ -207,7 +207,7 @@ func saveClientConfigToDB(installID, privateKey string) error {
 	return nil
 }
 
-func UploadEnvFile(c *gin.Context, file io.Reader, repoId string) (string, error) {
+func UploadEnvFile(c *gin.Context, file io.Reader, repoId, fileName string) (string, error) {
 	bucketName := os.Getenv("APP_ENV_BUCKET")
 	bucketKey := "envtest.png"
 

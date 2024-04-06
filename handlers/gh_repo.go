@@ -79,6 +79,7 @@ func GetBranches(c *gin.Context) {
 func UploadEnvFile(c *gin.Context) {
 	repoId := c.Param("repoId")
 	file, err := c.FormFile("file")
+	fileName := file.Filename
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -98,7 +99,7 @@ func UploadEnvFile(c *gin.Context) {
 		return
 	}
 
-	uri, err := services.UploadEnvFile(c, bytes.NewReader(fileBytes), repoId)
+	uri, err := services.UploadEnvFile(c, bytes.NewReader(fileBytes), repoId, fileName)
 	if err != nil {
 		return
 	}
