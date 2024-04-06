@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/Swechhya/isol8r-backend/data"
 	"github.com/Swechhya/isol8r-backend/internal/db"
@@ -14,8 +13,23 @@ import (
 )
 
 func GetAllFeatureEnvironments() ([]*data.FeatureEnvironment, error) {
-	query := goqu.From("feature_environments").Select("id", "name", "identifier", "description", "db_type", "created_at", "created_by")
-	fmt.Println(query.ToSQL())
+	query := goqu.
+		From(goqu.T("feature_environments")).
+		Select(
+			"feature_environments.id",
+			"feature_environments.name",
+			"feature_environments.identifier",
+			"feature_environments.created_at",
+			"feature_environments.created_by",
+			"resources.feature_environment_id",
+			"resources.repo_id",
+			"resources.is_auto_update",
+			"resources.branch",
+			"resources.link",
+		).
+		LeftJoin(goqu.T("resources"), goqu.On(goqu.I("feature_environments.id").Eq(goqu.I("resources.feature_environment_id"))))
+
+	fmt.Print(query.ToSQL())
 	selectSQL, _, err := query.ToSQL()
 	if err != nil {
 		return nil, err
@@ -27,62 +41,34 @@ func GetAllFeatureEnvironments() ([]*data.FeatureEnvironment, error) {
 	}
 	defer rows.Close()
 
-	var envLists []*data.FeatureEnvironment
-
+	envMap := make(map[int]*data.FeatureEnvironment)
 	for rows.Next() {
 		var fe data.FeatureEnvironment
-		if err := rows.Scan(&fe.ID, &fe.Name, &fe.Identifier, &fe.Description, &fe.DBType, &fe.CreatedAt, &fe.CreatedBy); err != nil {
+		var res data.Resource
+		if err := rows.Scan(
+			&fe.ID, &fe.Name, &fe.Identifier, &fe.CreatedAt, &fe.CreatedBy,
+			&res.FeatureEnvID, &res.RepoID, &res.IsAutoUpdate, &res.Branch, &res.Link,
+		); err != nil {
 			return nil, err
 		}
 
-		envLists = append(envLists, &fe)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
+		if env, ok := envMap[fe.ID]; ok {
+			// If feature environment already exists in the map, add the resource to its resources slice
+			env.Resources = append(env.Resources, res)
+		} else {
+			// If feature environment doesn't exist in the map, create a new entry and add it to the map
+			fe.Resources = append(fe.Resources, res)
+			envMap[fe.ID] = &fe
+		}
 	}
 
-	//TODO :: REMOVE LATER
-	if envLists == nil {
-		envLists = []*data.FeatureEnvironment{
-			{
-				Name:      "Feature Environment 1",
-				DBType:    "MySQL",
-				CreatedBy: "John Doe",
-				CreatedAt: time.Date(2022, 4, 7, 10, 0, 0, 0, time.UTC),
-				UpdatedAt: time.Date(2022, 4, 7, 10, 30, 0, 0, time.UTC),
-				Resources: []data.Resource{
-					{
-						FeatureEnvID: 1,
-						IsAutoUpdate: true,
-						Link:         "https://example.com/app1",
-					},
-					{
-						FeatureEnvID: 1,
-						IsAutoUpdate: false,
-						Link:         "https://example.com/app2",
-					},
-				},
-			},
-			{
-				Name:      "Feature Environment 2",
-				DBType:    "PostgreSQL",
-				CreatedBy: "Jane Smith",
-				CreatedAt: time.Date(2022, 4, 8, 9, 30, 0, 0, time.UTC),
-				UpdatedAt: time.Date(2022, 4, 8, 10, 15, 0, 0, time.UTC),
-				Resources: []data.Resource{
-					{
-						FeatureEnvID: 2,
-						IsAutoUpdate: true,
-						Link:         "https://example.com/app3",
-					},
-					{
-						FeatureEnvID: 2,
-						IsAutoUpdate: true,
-						Link:         "https://example.com/app4",
-					},
-				},
-			},
-		}
+	var envLists []*data.FeatureEnvironment
+	for _, env := range envMap {
+		envLists = append(envLists, env)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return envLists, nil
