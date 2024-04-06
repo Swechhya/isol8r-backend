@@ -231,6 +231,10 @@ func GenerateBuildManifest(branch string) error {
 	if err != nil {
 		return err
 	}
+	err = saveYaml(filepath.Join(dir, "ns.yml"), pod)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
