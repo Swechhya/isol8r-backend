@@ -87,8 +87,8 @@ func CreateFeatureEnvironment(fe data.FeatureEnvironment) error {
 	// Insert into table
 	db := db.DB()
 	dq := goqu.Insert("feature_environments").
-		Cols("name", "db_type", "created_by").
-		Vals(goqu.Vals{fe.Name, fe.DBType, fe.CreatedBy})
+		Cols("name", "identifier", "db_type", "created_by").
+		Vals(goqu.Vals{fe.Name, fe.Identifier, fe.DBType, fe.CreatedBy})
 
 	insertSql, args, err := dq.ToSQL()
 	if err != nil {
@@ -137,7 +137,7 @@ func insertResource(resource data.Resource) error {
 	db := db.DB()
 
 	dq := goqu.Insert("resources").
-		Cols("feature_environment_id", "repo_id", "branch_name", "is_auto_update", "link").
+		Cols("feature_environment_id", "repo_id", "branch", "is_auto_update", "link").
 		Vals(goqu.Vals{resource.FeatureEnvID, resource.RepoID, resource.Branch, resource.IsAutoUpdate, resource.Link})
 
 	insertSql, args, err := dq.ToSQL()

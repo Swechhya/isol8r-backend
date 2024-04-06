@@ -15,7 +15,7 @@ type FeatureEnvironment struct {
 
 type Resource struct {
 	FeatureEnvID int    `json:"featureEnvironmentId"`
-	RepoID       string `json:"repoId"`
+	RepoID       int    `json:"repoId"`
 	IsAutoUpdate bool   `json:"isAutoUpdate"`
 	Branch       string `json:"branch"`
 	Link         string `json:"link"`
