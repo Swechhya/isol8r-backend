@@ -44,7 +44,13 @@ func FECreateHandler(c *gin.Context) {
 
 func FEDeleteHandler(c *gin.Context) {
 	feID := c.Param("id")
-	if err := services.DeleteFeatureEnvironment(feID); err != nil {
+	id, err := strconv.Atoi(feID)
+	if err != nil {
+		ErrorReponse(c, err)
+		return
+	}
+
+	if err := services.DeleteFeatureEnvironment(id); err != nil {
 		ErrorReponse(c, err)
 		return
 	}
@@ -73,8 +79,17 @@ func FERedeployHandler(c *gin.Context) {
 }
 
 func FEEditHandler(c *gin.Context) {
-	// TODO: DELETE FEATURE ENV
+	feID := c.Param("id")
+	id, err := strconv.Atoi(feID)
+	if err != nil {
+		ErrorReponse(c, err)
+		return
+	}
 
+	if err := services.DeleteFeatureEnvironment(id); err != nil {
+		ErrorReponse(c, err)
+		return
+	}
 	// Recreate feature env
 	var fe data.FeatureEnvironment
 	if err := c.ShouldBindJSON(&fe); err != nil {

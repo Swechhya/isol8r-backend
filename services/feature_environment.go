@@ -122,7 +122,7 @@ func CreateFeatureEnvironment(fe data.FeatureEnvironment) error {
 	if err != nil {
 		// Check if the error is due to duplicate identifier
 		if strings.Contains(err.Error(), "feature_environments_identifier_key") {
-			return errors.New("Duplicate Identifier.")
+			return errors.New("duplicate Identifier.")
 		}
 		return err
 	}
@@ -145,7 +145,7 @@ func CreateFeatureEnvironment(fe data.FeatureEnvironment) error {
 	return nil
 }
 
-func DeleteFeatureEnvironment(feID string) error {
+func DeleteFeatureEnvironment(feID int) error {
 	db := db.DB()
 	deleteExpr := goqu.Delete("feature_environments").Where(goqu.I("id").Eq(feID))
 	sql, args, err := deleteExpr.ToSQL()
