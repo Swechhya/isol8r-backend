@@ -134,18 +134,30 @@ func CreateFeatureEnvironment(fe data.FeatureEnvironment) error {
 }
 
 func DeleteFeatureEnvironment(feID int) error {
-	// TODO DELETE resources
-
 	db := db.DB()
+
+	// Delete dependent records from the resources table first
+	deleteResourcesExpr := goqu.Delete("resources").Where(goqu.I("feature_environment_id").Eq(feID))
+	deleteResourcesSQL, args, err := deleteResourcesExpr.ToSQL()
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec(deleteResourcesSQL, args...)
+	if err != nil {
+		return err
+	}
+
+	// Then delete the feature environment record
 	deleteExpr := goqu.Delete("feature_environments").Where(goqu.I("id").Eq(feID))
-	sql, args, err := deleteExpr.ToSQL()
+	deleteSQL, args, err := deleteExpr.ToSQL()
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec(sql, args...)
+	_, err = db.Exec(deleteSQL, args...)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
