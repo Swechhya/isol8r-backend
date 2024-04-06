@@ -33,6 +33,7 @@ func SetupRouter() *gin.Engine {
 	{
 		featureEnvironment.GET("/repos", handlers.FEGetRepoHandler)
 		featureEnvironment.GET("/list", handlers.FEListHandler)
+		featureEnvironment.GET("/details/:id", handlers.FEDetailsHandler)
 		featureEnvironment.POST("/create", handlers.FECreateHandler)
 		featureEnvironment.POST("/delete/:id", handlers.FEDeleteHandler)
 		featureEnvironment.POST("/redeploy/:id", handlers.FERedeployHandler)

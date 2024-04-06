@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"net/http"
 	"strconv"
 
 	"github.com/Swechhya/isol8r-backend/data"
@@ -28,6 +27,22 @@ func FEListHandler(c *gin.Context) {
 	SuccessResponse(c, fe)
 }
 
+func FEDetailsHandler(c *gin.Context) {
+	ids := c.Param("id")
+	id, err := strconv.Atoi(ids)
+	if err != nil {
+		ErrorReponse(c, err)
+		return
+	}
+
+	fe, err := services.GetFeatureEnvironmentById(id)
+	if err != nil {
+		ErrorReponse(c, err)
+		return
+	}
+	SuccessResponse(c, fe)
+}
+
 func FECreateHandler(c *gin.Context) {
 	var fe data.FeatureEnvironment
 	if err := c.ShouldBindJSON(&fe); err != nil {
@@ -36,7 +51,8 @@ func FECreateHandler(c *gin.Context) {
 	}
 
 	isReDeploy := false
-	if err := services.CreateFeatureEnvironment(fe, isReDeploy); err != nil {
+	_, err := services.CreateFeatureEnvironment(fe, isReDeploy)
+	if err != nil {
 		ErrorReponse(c, err)
 		return
 	}
@@ -75,9 +91,8 @@ func FERedeployHandler(c *gin.Context) {
 	}
 
 	isReDeploy := true
-	if err := services.CreateFeatureEnvironment(*fe, isReDeploy); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+	if _, err := services.CreateFeatureEnvironment(*fe, isReDeploy); err != nil {
+		ErrorReponse(c, err)
 	}
 
 	SuccessResponse(c, fe)
@@ -103,11 +118,18 @@ func FEEditHandler(c *gin.Context) {
 		return
 	}
 
-	isReDeploy := true
-	if err := services.CreateFeatureEnvironment(fe, isReDeploy); err != nil {
+	isReDeploy := false
+	id, err = services.CreateFeatureEnvironment(fe, isReDeploy)
+	if err != nil {
 		ErrorReponse(c, err)
 		return
 	}
 
-	SuccessResponse(c, fe)
+	updatedFe, err := services.GetFeatureEnvironmentById(id)
+	if err != nil {
+		ErrorReponse(c, err)
+		return
+	}
+
+	SuccessResponse(c, updatedFe)
 }

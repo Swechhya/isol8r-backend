@@ -17,21 +17,22 @@ import (
 
 func ErrorReponse(c *gin.Context, err error) {
 	c.JSON(http.StatusInternalServerError, gin.H{
-		"error": err.Error(),
+		"status": "ERROR",
+		"error":  err.Error(),
 	})
 }
 
 func SuccessResponse(c *gin.Context, data any) {
 	c.JSON(http.StatusOK, gin.H{
-		"data": data,
+		"status": "OK",
+		"data":   data,
 	})
 }
 
 func SetupGithub(c *gin.Context) {
 	var config *data.GithubClientSetup
 	if err := c.ShouldBindJSON(&config); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		ErrorReponse(c, err)
 	}
 
 	bucketName := os.Getenv("PRIVATE_KEY_BUCKET")

@@ -137,15 +137,15 @@ func GetFeatureEnvironmentById(id int) (*data.FeatureEnvironment, error) {
 	return fe, nil
 }
 
-func CreateFeatureEnvironment(fe data.FeatureEnvironment, reDeploy bool) error {
+func CreateFeatureEnvironment(fe data.FeatureEnvironment, reDeploy bool) (int, error) {
 	if reDeploy {
 		if err := DeleteFeatureEnvironment(fe.ID); err != nil {
-			return err
+			return 0, err
 		}
 	}
 
 	if fe.Identifier == "" {
-		return fmt.Errorf("empty feature identifier")
+		return 0, fmt.Errorf("empty feature identifier")
 	}
 	// Insert into table
 	db := db.DB()
@@ -155,23 +155,23 @@ func CreateFeatureEnvironment(fe data.FeatureEnvironment, reDeploy bool) error {
 
 	insertSql, args, err := dq.ToSQL()
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	_, err = db.Exec(insertSql, args...)
 	if err != nil {
 		// Check if the error is due to duplicate identifier
 		if strings.Contains(err.Error(), "feature_environments_identifier_key") {
-			return errors.New("duplicate Identifier.")
+			return 0, errors.New("duplicate Identifier.")
 		}
-		return err
+		return 0, err
 	}
 
 	var feID int
 
 	err = db.QueryRow("SELECT lastval()").Scan(&feID)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	// ecr := GetConfig("dest")
@@ -187,16 +187,16 @@ func CreateFeatureEnvironment(fe data.FeatureEnvironment, reDeploy bool) error {
 
 		sql, args, err := dq.ToSQL()
 		for err != nil {
-			return err
+			return 0, err
 		}
 		rows, err := db.Query(sql, args...)
 		for err != nil {
-			return err
+			return 0, err
 		}
 		var repoFullName string
 		for rows.Next() {
 			if err := rows.Scan(&repoFullName); err != nil {
-				return err
+				return 0, err
 			}
 		}
 
@@ -205,24 +205,24 @@ func CreateFeatureEnvironment(fe data.FeatureEnvironment, reDeploy bool) error {
 
 		err = GenerateBuildManifest(fe.Identifier, repoName, resource.Branch, dest)
 		if err != nil {
-			return err
+			return 0, err
 		}
 		err = GenerateDeployManifest(fe.Identifier, dest, &resource)
 		if err != nil {
-			return err
+			return 0, err
 		}
 		err = DeployEnvironment(fe.Identifier)
 		if err != nil {
-			return err
+			return 0, err
 		}
 
 		resource.FeatureEnvID = feID
 		if err := insertResource(resource); err != nil {
-			return err
+			return 0, err
 		}
 	}
 
-	return nil
+	return feID, err
 }
 
 func DeleteFeatureEnvironment(feID int) error {
