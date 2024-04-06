@@ -12,7 +12,7 @@ import (
 )
 
 func GetAllFeatureEnvironments() ([]*data.FeatureEnvironment, error) {
-	query := goqu.From("feature_environments").Select("name", "identifier", "description", "db_type", "created_at", "created_by")
+	query := goqu.From("feature_environments").Select("id", "name", "identifier", "description", "db_type", "created_at", "created_by")
 	fmt.Println(query.ToSQL())
 	selectSQL, _, err := query.ToSQL()
 	if err != nil {
@@ -29,7 +29,7 @@ func GetAllFeatureEnvironments() ([]*data.FeatureEnvironment, error) {
 
 	for rows.Next() {
 		var fe data.FeatureEnvironment
-		if err := rows.Scan(&fe.Name, &fe.Identifier, &fe.Description, &fe.DBType, &fe.CreatedAt, &fe.CreatedBy); err != nil {
+		if err := rows.Scan(&fe.ID, &fe.Name, &fe.Identifier, &fe.Description, &fe.DBType, &fe.CreatedAt, &fe.CreatedBy); err != nil {
 			return nil, err
 		}
 

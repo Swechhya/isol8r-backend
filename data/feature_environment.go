@@ -3,6 +3,7 @@ package data
 import "time"
 
 type FeatureEnvironment struct {
+	ID          string     `json:"id"`
 	Name        string     `json:"name"`
 	Identifier  string     `json:"identifier"`
 	Description string     `json:"description"`
