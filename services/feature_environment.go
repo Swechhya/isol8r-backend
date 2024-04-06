@@ -1,7 +1,9 @@
 package services
 
 import (
+	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Swechhya/isol8r-backend/data"
@@ -97,6 +99,10 @@ func CreateFeatureEnvironment(fe data.FeatureEnvironment) error {
 
 	_, err = db.Exec(insertSql, args...)
 	if err != nil {
+		// Check if the error is due to duplicate identifier
+		if strings.Contains(err.Error(), "feature_environments_identifier_key") {
+			return errors.New("Duplicate Identifier.")
+		}
 		return err
 	}
 

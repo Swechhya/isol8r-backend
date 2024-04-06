@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
@@ -66,7 +67,8 @@ func GetRepos(c *gin.Context) {
 }
 
 func GetBranches(c *gin.Context) {
-	repoId := c.Param("repoId")
+	repoParam := c.Param("repoId")
+	repoId, err := strconv.ParseInt(repoParam, 10, 64)
 	branches, err := services.GetBranches(c, repoId)
 	if err != nil {
 		ErrorReponse(c, err)
