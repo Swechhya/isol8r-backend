@@ -39,6 +39,7 @@ func GetAllFeatureEnvironments() ([]*data.FeatureEnvironment, error) {
 		return nil, err
 	}
 
+	//TODO :: REMOVE LATER
 	if envLists == nil {
 		envLists = []*data.FeatureEnvironment{
 			{

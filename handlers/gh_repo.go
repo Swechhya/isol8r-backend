@@ -34,13 +34,13 @@ func SetupGithub(c *gin.Context) {
 		return
 	}
 
-	bucketName := "panik-private-key"
-	bucketKey := "key.pem"
+	bucketName := os.Getenv("PRIVATE_KEY_BUCKET")
+	fileName := os.Getenv("PRIVATE_KEY_FILENAME")
 	filePath, _ := os.Getwd()
-	fullFilePath := filepath.Join(filePath, bucketKey)
+	fullFilePath := filepath.Join(filePath, fileName)
 
 	client := s3.GetClient()
-	err := client.DownloadFileToPath(c.Request.Context(), bucketName, bucketKey, fullFilePath)
+	err := client.DownloadFileToPath(c.Request.Context(), bucketName, fileName, fullFilePath)
 	if err != nil {
 		ErrorReponse(c, err)
 		return

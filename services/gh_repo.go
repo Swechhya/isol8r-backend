@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/Swechhya/isol8r-backend/data"
@@ -90,7 +91,7 @@ func GetRepos(ctx context.Context) ([]*data.Repo, error) {
 
 	db := db.DB()
 	// Delete existing records from the repositories table
-	deleteExpr := goqu.Delete("repositories").Where(goqu.I("name").IsNotNull())
+	deleteExpr := goqu.Delete("repositories")
 	sql, args, err := deleteExpr.ToSQL()
 	if err != nil {
 		return nil, err
@@ -207,7 +208,7 @@ func saveClientConfigToDB(installID, privateKey string) error {
 }
 
 func UploadEnvFile(c *gin.Context, file io.Reader, repoId string) (string, error) {
-	bucketName := "panik-env"
+	bucketName := os.Getenv("APP_ENV_BUCKET")
 	bucketKey := "envtest.png"
 
 	client := s3.GetClient()
