@@ -11,7 +11,7 @@ import (
 func FEGetRepoHandler(c *gin.Context) {
 	repos, err := services.FetchLaunchReadyRepos(c)
 	if err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 	SuccessResponse(c, repos)
@@ -20,7 +20,7 @@ func FEGetRepoHandler(c *gin.Context) {
 func FEListHandler(c *gin.Context) {
 	fe, err := services.GetAllFeatureEnvironments()
 	if err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 
@@ -31,13 +31,13 @@ func FEDetailsHandler(c *gin.Context) {
 	ids := c.Param("id")
 	id, err := strconv.Atoi(ids)
 	if err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 
 	fe, err := services.GetFeatureEnvironmentById(id)
 	if err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 	SuccessResponse(c, fe)
@@ -46,14 +46,14 @@ func FEDetailsHandler(c *gin.Context) {
 func FECreateHandler(c *gin.Context) {
 	var fe data.FeatureEnvironment
 	if err := c.ShouldBindJSON(&fe); err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 
 	isReDeploy := false
 	_, err := services.CreateFeatureEnvironment(fe, isReDeploy)
 	if err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 
@@ -64,12 +64,12 @@ func FEDeleteHandler(c *gin.Context) {
 	feID := c.Param("id")
 	id, err := strconv.Atoi(feID)
 	if err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 
 	if err := services.DeleteFeatureEnvironment(id); err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 
@@ -77,59 +77,64 @@ func FEDeleteHandler(c *gin.Context) {
 }
 
 func FERedeployHandler(c *gin.Context) {
-	ids := c.Param("id")
-	id, err := strconv.Atoi(ids)
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 
 	fe, err := services.GetFeatureEnvironmentById(id)
 	if err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 
 	isReDeploy := true
-	if _, err := services.CreateFeatureEnvironment(*fe, isReDeploy); err != nil {
-		ErrorReponse(c, err)
+	fe, err = createOrUpdateFeatureEnvironment(fe, isReDeploy)
+	if err != nil {
+		ErrorResponse(c, err)
+		return
 	}
 
 	SuccessResponse(c, fe)
 }
 
 func FEEditHandler(c *gin.Context) {
-	feID := c.Param("id")
-	id, err := strconv.Atoi(feID)
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 
 	if err := services.DeleteFeatureEnvironment(id); err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 
-	// Recreate feature env
-	var fe data.FeatureEnvironment
+	var fe *data.FeatureEnvironment
 	if err := c.ShouldBindJSON(&fe); err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 
 	isReDeploy := false
-	id, err = services.CreateFeatureEnvironment(fe, isReDeploy)
+	fe, err = createOrUpdateFeatureEnvironment(fe, isReDeploy)
 	if err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 
-	updatedFe, err := services.GetFeatureEnvironmentById(id)
+	SuccessResponse(c, fe)
+}
+
+func createOrUpdateFeatureEnvironment(fe *data.FeatureEnvironment, isReDeploy bool) (*data.FeatureEnvironment, error) {
+	feID, err := services.CreateFeatureEnvironment(*fe, isReDeploy)
 	if err != nil {
-		ErrorReponse(c, err)
-		return
+		return nil, err
 	}
 
-	SuccessResponse(c, updatedFe)
+	fe.ID = feID
+	return fe, nil
 }

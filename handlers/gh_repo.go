@@ -15,7 +15,7 @@ import (
 	"github.com/Swechhya/isol8r-backend/services/s3"
 )
 
-func ErrorReponse(c *gin.Context, err error) {
+func ErrorResponse(c *gin.Context, err error) {
 	c.JSON(http.StatusInternalServerError, gin.H{
 		"status": "ERROR",
 		"error":  err.Error(),
@@ -32,7 +32,7 @@ func SuccessResponse(c *gin.Context, data any) {
 func SetupGithub(c *gin.Context) {
 	var config *data.GithubClientSetup
 	if err := c.ShouldBindJSON(&config); err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 	}
 
 	bucketName := os.Getenv("PRIVATE_KEY_BUCKET")
@@ -43,14 +43,14 @@ func SetupGithub(c *gin.Context) {
 	client := s3.GetClient()
 	err := client.DownloadFileToPath(c.Request.Context(), bucketName, fileName, fullFilePath)
 	if err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 
 	config.PrivateKeyPath = fullFilePath
 	err = services.SetupGithubClient(c.Request.Context(), config)
 	if err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 
@@ -60,7 +60,7 @@ func SetupGithub(c *gin.Context) {
 func GetRepos(c *gin.Context) {
 	repos, err := services.GetRepos(c)
 	if err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 	SuccessResponse(c, repos)
@@ -70,13 +70,13 @@ func GetBranches(c *gin.Context) {
 	repoParam := c.Param("repoId")
 	repoId, err := strconv.ParseInt(repoParam, 10, 64)
 	if err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 
 	branches, err := services.GetBranches(c, repoId)
 	if err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 
@@ -88,13 +88,13 @@ func UploadEnvFile(c *gin.Context) {
 	file, err := c.FormFile("file")
 	fileName := file.Filename
 	if err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 
 	fileReader, err := file.Open()
 	if err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 	defer fileReader.Close()
@@ -102,7 +102,7 @@ func UploadEnvFile(c *gin.Context) {
 	// Read the file into a buffer
 	fileBytes, err := ioutil.ReadAll(fileReader)
 	if err != nil {
-		ErrorReponse(c, err)
+		ErrorResponse(c, err)
 		return
 	}
 
