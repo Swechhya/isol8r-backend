@@ -21,7 +21,6 @@ func main() {
 	})
 
 	router.POST("/config/create", handlers.ConfigHandler)
-	router.POST("/repos", handlers.GetRepos)
 
 	gh := router.Group("/gh")
 	{

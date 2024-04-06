@@ -3,8 +3,12 @@ CREATE TABLE IF NOT EXISTS repositories (
     name VARCHAR(255) NOT NULL,
     full_name VARCHAR(255) NOT NULL,
     user_login VARCHAR(255) NOT NULL,
-    s3_uri VARCHAR(255) NOT NULL,
-    created_by VARCHAR(255) NOT NULL,
+    setup BOOLEAN,
+    env_uri VARCHAR(255) NOT NULL,
+    created_by VARCHAR(255) ,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE repositories
+ALTER COLUMN setup SET DEFAULT FALSE;

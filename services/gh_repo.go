@@ -29,7 +29,7 @@ var Gh *GitHubClient
 var User *github.User
 
 func SetupGithubClient(ctx context.Context, config *data.GithubClientSetup) error {
-	key, err := key.Parse([]byte(config.PrivateKey))
+	key, err := key.FromFile(config.PrivateKey)
 	if err != nil {
 		return err
 	}
@@ -178,19 +178,16 @@ func saveClientConfigToDB(installID, privateKey string) error {
 	return nil
 }
 
-func UploadEnvFile(c *gin.Context, file io.Reader) error {
-	bucketName := ""
-	bucketKey := ""
-	assesKey := ""
-	secretKey := ""
-	region := ""
+func UploadEnvFile(c *gin.Context, file io.Reader) (string, error) {
+	bucketName := "panik-env"
+	bucketKey := "envtest.png"
 
-	client := s3.GetClient(assesKey, secretKey, region)
+	client := s3.GetClient()
 	uri, err := client.UploadFile(c, bucketName, bucketKey, file)
 	if err != nil {
-		return err
+		fmt.Print(err)
+		return "", err
 	}
 
-	fmt.Print(uri)
-	return nil
+	return *uri, nil
 }

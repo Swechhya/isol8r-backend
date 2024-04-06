@@ -2,13 +2,17 @@ package handlers
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/Swechhya/panik-backend/data"
 	"github.com/Swechhya/panik-backend/services"
+	"github.com/Swechhya/panik-backend/services/s3"
 )
 
 func ErrorReponse(c *gin.Context, err error) {
@@ -30,7 +34,20 @@ func SetupGithub(c *gin.Context) {
 		return
 	}
 
-	err := services.SetupGithubClient(c.Request.Context(), config)
+	bucketName := "panik-private-key"
+	bucketKey := "key.pem"
+	filePath, _ := os.Getwd()
+	fullFilePath := filepath.Join(filePath, bucketKey)
+
+	client := s3.GetClient()
+	err := client.DownloadFileToPath(c.Request.Context(), bucketName, bucketKey, fullFilePath)
+	if err != nil {
+		ErrorReponse(c, err)
+		return
+	}
+
+	config.PrivateKey = fullFilePath
+	err = services.SetupGithubClient(c.Request.Context(), config)
 	if err != nil {
 		ErrorReponse(c, err)
 		return
@@ -79,7 +96,10 @@ func UploadEnvFile(c *gin.Context) {
 		return
 	}
 
-	if err := services.UploadEnvFile(c, bytes.NewReader(fileBytes)); err != nil {
+	uri, err := services.UploadEnvFile(c, bytes.NewReader(fileBytes))
+	if err != nil {
 		return
 	}
+
+	fmt.Println(uri)
 }
