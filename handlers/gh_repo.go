@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -46,7 +45,7 @@ func SetupGithub(c *gin.Context) {
 		return
 	}
 
-	config.PrivateKey = fullFilePath
+	config.PrivateKeyPath = fullFilePath
 	err = services.SetupGithubClient(c.Request.Context(), config)
 	if err != nil {
 		ErrorReponse(c, err)
@@ -76,6 +75,7 @@ func GetBranches(c *gin.Context) {
 }
 
 func UploadEnvFile(c *gin.Context) {
+	repo := c.Param("repo")
 	file, err := c.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -96,10 +96,10 @@ func UploadEnvFile(c *gin.Context) {
 		return
 	}
 
-	uri, err := services.UploadEnvFile(c, bytes.NewReader(fileBytes))
+	uri, err := services.UploadEnvFile(c, bytes.NewReader(fileBytes), repo)
 	if err != nil {
 		return
 	}
 
-	fmt.Println(uri)
+	SuccessResponse(c, uri)
 }

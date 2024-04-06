@@ -29,19 +29,19 @@ var Gh *GitHubClient
 var User *github.User
 
 func SetupGithubClient(ctx context.Context, config *data.GithubClientSetup) error {
-	key, err := key.FromFile(config.PrivateKey)
+	key, err := key.FromFile(config.PrivateKeyPath)
 	if err != nil {
 		return err
 	}
 
 	installID := config.InstallID
-	privateKey := config.PrivateKey
 	appID := config.AppID
-	if installID == "" || privateKey == "" || appID == "" {
-		return errors.New("installID or privateKey missing in configs")
+	privateKeyPath := config.PrivateKeyPath
+	if installID == "" || privateKeyPath == "" || appID == "" {
+		return errors.New("installID or appID missing in configs")
 	}
 
-	install, err := inst.NewConfig(installID, privateKey, key)
+	install, err := inst.NewConfig(installID, appID, key)
 	if err != nil {
 		return err
 	}
@@ -50,7 +50,7 @@ func SetupGithubClient(ctx context.Context, config *data.GithubClientSetup) erro
 	if err != nil {
 		return err
 	}
-	err = AddConfig("privateKey", privateKey)
+	err = AddConfig("privateKeyPath", privateKeyPath)
 	if err != nil {
 		return err
 	}
@@ -89,13 +89,32 @@ func GetRepos(ctx context.Context) ([]*data.Repo, error) {
 		return nil, err
 	}
 
-	//insert into table
 	db := db.DB()
+	// Delete existing records from the repositories table
+	deleteExpr := goqu.Delete("repositories").Where(goqu.I("name").IsNotNull())
+	sql, args, err := deleteExpr.ToSQL()
+	if err != nil {
+		return nil, err
+	}
+	_, err = db.Exec(sql, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Insert new records into the repositories table
 	for _, repo := range repos.Repositories {
-		_, err := db.Exec(`
-        INSERT INTO repositories (name, full_name, user_login, s3_uri, created_by)
-        VALUES ($1, $2, $3, $4, $5)
-    `, repo.Name, repo.Name, "", "", "")
+		insertExpr := goqu.Insert("repositories").Rows(
+			goqu.Record{
+				"name":       repo.Name,
+				"full_name":  repo.Name,
+				"user_login": "",
+			},
+		)
+		sql, args, err := insertExpr.ToSQL()
+		if err != nil {
+			return nil, err
+		}
+		_, err = db.Exec(sql, args...)
 		if err != nil {
 			return nil, err
 		}
@@ -178,7 +197,7 @@ func saveClientConfigToDB(installID, privateKey string) error {
 	return nil
 }
 
-func UploadEnvFile(c *gin.Context, file io.Reader) (string, error) {
+func UploadEnvFile(c *gin.Context, file io.Reader, repo string) (string, error) {
 	bucketName := "panik-env"
 	bucketKey := "envtest.png"
 
@@ -189,5 +208,33 @@ func UploadEnvFile(c *gin.Context, file io.Reader) (string, error) {
 		return "", err
 	}
 
+	// Update repository in the database
+	if err := updateRepository(repo, *uri); err != nil {
+		return "", err
+	}
+
 	return *uri, nil
+}
+
+func updateRepository(repo, uri string) error {
+	db := db.DB()
+
+	// Update the repositories table
+	updateExpr, args, err := goqu.Update("repositories").
+		Set(goqu.Record{"env_uri": uri, "setup": true}).
+		Where(goqu.Ex{
+			"name": goqu.Op{"eq": repo},
+		}).ToSQL()
+
+	if err != nil {
+		return err
+	}
+
+	// Execute the SQL query
+	_, err = db.Exec(updateExpr, args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

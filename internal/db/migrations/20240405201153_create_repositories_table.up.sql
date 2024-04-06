@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS repositories (
     full_name VARCHAR(255) NOT NULL,
     user_login VARCHAR(255) NOT NULL,
     setup BOOLEAN,
-    env_uri VARCHAR(255) NOT NULL,
+    env_uri VARCHAR(255),
     created_by VARCHAR(255) ,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
