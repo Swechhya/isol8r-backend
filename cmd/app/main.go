@@ -20,13 +20,12 @@ func main() {
 		c.String(http.StatusOK, "Server Running...")
 	})
 
-	router.POST("/config/create", handlers.ConfigHandler)
-
 	gh := router.Group("/gh")
 	{
 		gh.POST("/setup", handlers.SetupGithub)
-		gh.POST("/repos", handlers.GetRepos)
+		gh.GET("/repos", handlers.GetRepos)
 		gh.GET("/branches/:repo", handlers.GetBranches)
+		gh.POST("/save-env/:repo", handlers.UploadEnvFile)
 	}
 
 	//feature-enviroment-handler

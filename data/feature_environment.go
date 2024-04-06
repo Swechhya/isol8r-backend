@@ -4,16 +4,15 @@ import "time"
 
 type FeatureEnvironment struct {
 	Name      string     `json:"name"`
-	FeatureID string     `json:"feature_id"`
 	DBType    string     `json:"dbType"`
 	CreatedBy string     `json:"createdBy"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
+	CreatedAt time.Time  `json:"createdAt"`
+	UpdatedAt time.Time  `json:"updatedAt"`
 	Resources []Resource `json:"resources"`
 }
 
 type Resource struct {
-	FeatureEnvID int    `json:"feature_environment_id"`
+	FeatureEnvID int    `json:"featureEnvironmentId"`
 	AppName      string `json:"appName"`
 	IsAutoUpdate bool   `json:"isAutoUpdate"`
 	Link         string `json:"link"`
