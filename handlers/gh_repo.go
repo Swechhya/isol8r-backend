@@ -9,9 +9,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Swechhya/panik-backend/data"
-	"github.com/Swechhya/panik-backend/services"
-	"github.com/Swechhya/panik-backend/services/s3"
+	"github.com/Swechhya/isol8r-backend/data"
+	"github.com/Swechhya/isol8r-backend/services"
+	"github.com/Swechhya/isol8r-backend/services/s3"
 )
 
 func ErrorReponse(c *gin.Context, err error) {

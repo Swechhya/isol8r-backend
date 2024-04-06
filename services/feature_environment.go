@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Swechhya/panik-backend/data"
-	"github.com/Swechhya/panik-backend/internal/db"
+	"github.com/Swechhya/isol8r-backend/data"
+	"github.com/Swechhya/isol8r-backend/internal/db"
 	"github.com/doug-martin/goqu/v9"
 )
 
