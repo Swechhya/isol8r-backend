@@ -26,7 +26,7 @@ func GetAllFeatureEnvironments() ([]*data.FeatureEnvironment, error) {
 
 	for rows.Next() {
 		var fe data.FeatureEnvironment
-		if err := rows.Scan(&fe.Name, &fe.FeatureID, &fe.DBType, &fe.CreatedAt, &fe.CreatedBy); err != nil {
+		if err := rows.Scan(&fe.Name, &fe.DBType, &fe.CreatedAt, &fe.CreatedBy); err != nil {
 			return nil, err
 		}
 
@@ -43,8 +43,8 @@ func CreateFeatureEnvironment(fe data.FeatureEnvironment) error {
 	// Insert into table
 	db := db.DB()
 	dq := goqu.Insert("feature_environments").
-		Cols("name", "feature_id", "db_type", "created_at", "created_by").
-		Vals(goqu.Vals{fe.Name, fe.FeatureID, fe.DBType, fe.CreatedAt, fe.CreatedBy})
+		Cols("name", "db_type", "created_by").
+		Vals(goqu.Vals{fe.Name, fe.DBType, fe.CreatedBy})
 
 	insertSql, args, err := dq.ToSQL()
 	if err != nil {
