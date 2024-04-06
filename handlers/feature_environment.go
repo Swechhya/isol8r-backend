@@ -13,6 +13,7 @@ func FEGetRepoHandler(c *gin.Context) {
 	repos, err := services.FetchLaunchReadyRepos(c)
 	if err != nil {
 		ErrorReponse(c, err)
+		return
 	}
 	SuccessResponse(c, repos)
 }
