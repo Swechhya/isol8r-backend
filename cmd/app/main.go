@@ -24,8 +24,8 @@ func main() {
 	{
 		gh.POST("/setup", handlers.SetupGithub)
 		gh.GET("/repos", handlers.GetRepos)
-		gh.GET("/branches/:repo", handlers.GetBranches)
-		gh.POST("/save-env/:repo", handlers.UploadEnvFile)
+		gh.GET("/branches/:repoId", handlers.GetBranches)
+		gh.POST("/save-env/:repoId", handlers.UploadEnvFile)
 	}
 
 	//feature-enviroment-handler
@@ -33,7 +33,7 @@ func main() {
 	{
 		featureEnvironment.GET("/list", handlers.FEListHandler)
 		featureEnvironment.POST("/create", handlers.FECreateHandler)
-		featureEnvironment.POST("/delete", handlers.FEDeleteHandler)
+		featureEnvironment.POST("/delete/:id", handlers.FEDeleteHandler)
 	}
 
 	// By default it serves on :8080 unless a

@@ -66,8 +66,8 @@ func GetRepos(c *gin.Context) {
 }
 
 func GetBranches(c *gin.Context) {
-	repo := c.Param("repo")
-	branches, err := services.GetBranches(c, repo)
+	repoId := c.Param("repoId")
+	branches, err := services.GetBranches(c, repoId)
 	if err != nil {
 		ErrorReponse(c, err)
 	}
@@ -75,7 +75,7 @@ func GetBranches(c *gin.Context) {
 }
 
 func UploadEnvFile(c *gin.Context) {
-	repo := c.Param("repo")
+	repoId := c.Param("repoId")
 	file, err := c.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -96,7 +96,7 @@ func UploadEnvFile(c *gin.Context) {
 		return
 	}
 
-	uri, err := services.UploadEnvFile(c, bytes.NewReader(fileBytes), repo)
+	uri, err := services.UploadEnvFile(c, bytes.NewReader(fileBytes), repoId)
 	if err != nil {
 		return
 	}

@@ -105,6 +105,7 @@ func GetRepos(ctx context.Context) ([]*data.Repo, error) {
 	for _, repo := range repos.Repositories {
 		insertExpr := goqu.Insert("repositories").Rows(
 			goqu.Record{
+				"repo_id":    repo.Id,
 				"name":       repo.Name,
 				"full_name":  repo.Name,
 				"user_login": "",
@@ -123,8 +124,8 @@ func GetRepos(ctx context.Context) ([]*data.Repo, error) {
 	return repos.Repositories, nil
 }
 
-func GetBranches(ctx context.Context, repo string) ([]*github.Branch, error) {
-	branches, _, err := Gh.Client.Repositories.ListBranches(ctx, *User.Login, repo, nil)
+func GetBranches(ctx context.Context, repoId string) ([]*github.Branch, error) {
+	branches, _, err := Gh.Client.Repositories.ListBranches(ctx, *User.Login, repoId, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -197,33 +198,32 @@ func saveClientConfigToDB(installID, privateKey string) error {
 	return nil
 }
 
-func UploadEnvFile(c *gin.Context, file io.Reader, repo string) (string, error) {
+func UploadEnvFile(c *gin.Context, file io.Reader, repoId string) (string, error) {
 	bucketName := "panik-env"
 	bucketKey := "envtest.png"
 
 	client := s3.GetClient()
 	uri, err := client.UploadFile(c, bucketName, bucketKey, file)
 	if err != nil {
-		fmt.Print(err)
 		return "", err
 	}
 
 	// Update repository in the database
-	if err := updateRepository(repo, *uri); err != nil {
+	if err := updateRepository(repoId, *uri); err != nil {
 		return "", err
 	}
 
 	return *uri, nil
 }
 
-func updateRepository(repo, uri string) error {
+func updateRepository(repoId, uri string) error {
 	db := db.DB()
 
 	// Update the repositories table
 	updateExpr, args, err := goqu.Update("repositories").
 		Set(goqu.Record{"env_uri": uri, "setup": true}).
 		Where(goqu.Ex{
-			"name": goqu.Op{"eq": repo},
+			"repo_id": goqu.Op{"eq": repoId},
 		}).ToSQL()
 
 	if err != nil {

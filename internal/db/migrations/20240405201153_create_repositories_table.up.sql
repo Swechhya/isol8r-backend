@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS repositories (
     id BIGSERIAL PRIMARY KEY,
+    repo_id INT UNIQUE,
     name VARCHAR(255) NOT NULL,
     full_name VARCHAR(255) NOT NULL,
     user_login VARCHAR(255) NOT NULL,
