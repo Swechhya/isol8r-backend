@@ -177,22 +177,29 @@ func CreateFeatureEnvironment(fe data.FeatureEnvironment) error {
 	return nil
 }
 
-func DeleteFeatureEnvironment(identifier string) error {
-	err := runDeleteKCommand(identifier)
+func DeleteFeatureEnvironment(feID int) error {
+	db := db.DB()
+
+	deleteResourcesExpr := goqu.Delete("resources").Where(goqu.I("feature_environment_id").Eq(feID))
+	deleteResourcesSQL, args, err := deleteResourcesExpr.ToSQL()
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec(deleteResourcesSQL, args...)
 	if err != nil {
 		return err
 	}
 
-	db := db.DB()
-	deleteExpr := goqu.Delete("feature_environments").Where(goqu.I("identifier").Eq(identifier))
-	sql, args, err := deleteExpr.ToSQL()
+	deleteExpr := goqu.Delete("feature_environments").Where(goqu.I("id").Eq(feID))
+	deleteSQL, args, err := deleteExpr.ToSQL()
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec(sql, args...)
+	_, err = db.Exec(deleteSQL, args...)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 

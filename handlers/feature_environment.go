@@ -55,6 +55,8 @@ func FEDeleteHandler(c *gin.Context) {
 		ErrorReponse(c, err)
 		return
 	}
+
+	SuccessResponse(c, "OK")
 }
 
 func FERedeployHandler(c *gin.Context) {
@@ -91,6 +93,7 @@ func FEEditHandler(c *gin.Context) {
 		ErrorReponse(c, err)
 		return
 	}
+
 	// Recreate feature env
 	var fe data.FeatureEnvironment
 	if err := c.ShouldBindJSON(&fe); err != nil {
