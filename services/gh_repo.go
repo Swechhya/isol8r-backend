@@ -178,19 +178,19 @@ func saveClientConfigToDB(installID, privateKey string) error {
 	return nil
 }
 
-func UploadEnvFile(c *gin.Context, file io.Reader) error {
-	bucketName := ""
-	bucketKey := ""
-	assesKey := ""
-	secretKey := ""
-	region := ""
+func UploadEnvFile(c *gin.Context, file io.Reader) (string, error) {
+	bucketName := "panik-env"
+	bucketKey := "envtest.png"
+	accessKey := "ASIAZQ3DSF27AOODHVWH"
+	secretKey := "M6yMnGPB7hLf9YdVxEbatoSfS16eA0Q915ZayfMh"
+	region := "us-east-1"
 
-	client := s3.GetClient(assesKey, secretKey, region)
+	client := s3.GetClient(accessKey, secretKey, region)
 	uri, err := client.UploadFile(c, bucketName, bucketKey, file)
 	if err != nil {
-		return err
+		fmt.Print(err)
+		return "", err
 	}
 
-	fmt.Print(uri)
-	return nil
+	return *uri, nil
 }
