@@ -63,16 +63,22 @@ func GetRepos(c *gin.Context) {
 		return
 	}
 	SuccessResponse(c, repos)
-	return
 }
 
 func GetBranches(c *gin.Context) {
 	repoParam := c.Param("repoId")
 	repoId, err := strconv.ParseInt(repoParam, 10, 64)
+	if err != nil {
+		ErrorReponse(c, err)
+		return
+	}
+
 	branches, err := services.GetBranches(c, repoId)
 	if err != nil {
 		ErrorReponse(c, err)
+		return
 	}
+
 	SuccessResponse(c, branches)
 }
 
