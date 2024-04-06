@@ -3,6 +3,7 @@ package data
 import "time"
 
 type FeatureEnvironment struct {
+	ID          int        `json:"id"`
 	Name        string     `json:"name"`
 	Identifier  string     `json:"identifier"`
 	Description string     `json:"description"`
@@ -21,16 +22,26 @@ type Resource struct {
 	Link         string `json:"link"`
 }
 
-type RepoList struct {
-	Repositories []*Repo `json:"repositories"`
+type Commit struct {
+	SHA string `json:"sha"`
+	URL string `json:"url"`
 }
 
-type Repo struct {
-	Id   int64  `json:"id"`
-	Name string `json:"name"`
+// RepositoryData represents data about a GitHub repository
+type Branch struct {
+	Name      string `json:"name"`
+	Commit    Commit `json:"commit"`
+	Protected bool   `json:"protected"`
 }
 
-type InstallationToken struct {
-	Token     string `json:"token"`
-	ExpiresAt string `json:"expires_at"`
+type ReadyRepositories struct {
+	ID        uint64    `json:"id"`
+	RepoID    int       `json:"repo_id"`
+	Name      string    `json:"name"`
+	FullName  string    `json:"full_name"`
+	UserLogin string    `json:"user_login"`
+	URL       string    `json:"url"`
+	Setup     bool      `json:"setup"`
+	EnvURI    string    `json:"env_uri"`
+	Branch    []*Branch `json:"branches"`
 }

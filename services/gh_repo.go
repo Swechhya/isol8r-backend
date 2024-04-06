@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/Swechhya/isol8r-backend/data"
@@ -26,7 +27,6 @@ type GitHubClient struct {
 }
 
 var Gh *GitHubClient
-var User *github.User
 
 func SetupGithubClient(ctx context.Context, config *data.GithubClientSetup) error {
 	key, err := key.FromFile(config.PrivateKeyPath)
@@ -82,7 +82,7 @@ func GetRepos(ctx context.Context) ([]*data.Repo, error) {
 		return nil, err
 	}
 
-	repos := new(data.RepoList)
+	repos := new(data.Repositories)
 
 	err = json.Unmarshal(b, repos)
 	if err != nil {
@@ -91,7 +91,7 @@ func GetRepos(ctx context.Context) ([]*data.Repo, error) {
 
 	db := db.DB()
 	// Delete existing records from the repositories table
-	deleteExpr := goqu.Delete("repositories").Where(goqu.I("name").IsNotNull())
+	deleteExpr := goqu.Delete("repositories")
 	sql, args, err := deleteExpr.ToSQL()
 	if err != nil {
 		return nil, err
@@ -102,13 +102,14 @@ func GetRepos(ctx context.Context) ([]*data.Repo, error) {
 	}
 
 	// Insert new records into the repositories table
-	for _, repo := range repos.Repositories {
+	for _, repo := range repos.List {
 		insertExpr := goqu.Insert("repositories").Rows(
 			goqu.Record{
 				"repo_id":    repo.Id,
 				"name":       repo.Name,
 				"full_name":  repo.Name,
 				"user_login": "",
+				"url":        repo.Url,
 			},
 		)
 		sql, args, err := insertExpr.ToSQL()
@@ -121,11 +122,19 @@ func GetRepos(ctx context.Context) ([]*data.Repo, error) {
 		}
 	}
 
-	return repos.Repositories, nil
+	return repos.List, nil
 }
 
-func GetBranches(ctx context.Context, repoId string) ([]*github.Branch, error) {
-	branches, _, err := Gh.Client.Repositories.ListBranches(ctx, *User.Login, repoId, nil)
+func GetBranches(ctx context.Context, repoId int64) ([]*github.Branch, error) {
+	repo, _, err := Gh.Client.Repositories.GetByID(ctx, repoId)
+	if err != nil {
+		return nil, err
+	}
+
+	repoName := *repo.Name
+	owner := *repo.Owner.Login
+
+	branches, _, err := Gh.Client.Repositories.ListBranches(ctx, owner, repoName, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -203,8 +212,8 @@ func saveClientConfigToDB(installID, privateKey string) error {
 	return nil
 }
 
-func UploadEnvFile(c *gin.Context, file io.Reader, repoId string) (string, error) {
-	bucketName := "panik-env"
+func UploadEnvFile(c *gin.Context, file io.Reader, repoId, fileName string) (string, error) {
+	bucketName := os.Getenv("APP_ENV_BUCKET")
 	bucketKey := "envtest.png"
 
 	client := s3.GetClient()

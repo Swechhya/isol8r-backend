@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS repositories (
     name VARCHAR(255) NOT NULL,
     full_name VARCHAR(255) NOT NULL,
     user_login VARCHAR(255) NOT NULL,
+    url VARCHAR(255) NOT NULL,
     setup BOOLEAN,
     env_uri VARCHAR(255),
     created_by VARCHAR(255) ,

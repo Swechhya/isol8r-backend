@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
@@ -33,13 +34,13 @@ func SetupGithub(c *gin.Context) {
 		return
 	}
 
-	bucketName := "panik-private-key"
-	bucketKey := "key.pem"
+	bucketName := os.Getenv("PRIVATE_KEY_BUCKET")
+	fileName := os.Getenv("PRIVATE_KEY_FILENAME")
 	filePath, _ := os.Getwd()
-	fullFilePath := filepath.Join(filePath, bucketKey)
+	fullFilePath := filepath.Join(filePath, fileName)
 
 	client := s3.GetClient()
-	err := client.DownloadFileToPath(c.Request.Context(), bucketName, bucketKey, fullFilePath)
+	err := client.DownloadFileToPath(c.Request.Context(), bucketName, fileName, fullFilePath)
 	if err != nil {
 		ErrorReponse(c, err)
 		return
@@ -66,7 +67,8 @@ func GetRepos(c *gin.Context) {
 }
 
 func GetBranches(c *gin.Context) {
-	repoId := c.Param("repoId")
+	repoParam := c.Param("repoId")
+	repoId, err := strconv.ParseInt(repoParam, 10, 64)
 	branches, err := services.GetBranches(c, repoId)
 	if err != nil {
 		ErrorReponse(c, err)
@@ -77,6 +79,7 @@ func GetBranches(c *gin.Context) {
 func UploadEnvFile(c *gin.Context) {
 	repoId := c.Param("repoId")
 	file, err := c.FormFile("file")
+	fileName := file.Filename
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -96,7 +99,7 @@ func UploadEnvFile(c *gin.Context) {
 		return
 	}
 
-	uri, err := services.UploadEnvFile(c, bytes.NewReader(fileBytes), repoId)
+	uri, err := services.UploadEnvFile(c, bytes.NewReader(fileBytes), repoId, fileName)
 	if err != nil {
 		return
 	}
