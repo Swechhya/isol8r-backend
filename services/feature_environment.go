@@ -27,6 +27,7 @@ func GetAllFeatureEnvironments() ([]*data.FeatureEnvironment, error) {
 			"resources.is_auto_update",
 			"resources.branch",
 			"resources.link",
+			"resources.port",
 		).
 		LeftJoin(goqu.T("resources"), goqu.On(goqu.I("feature_environments.id").Eq(goqu.I("resources.feature_environment_id"))))
 
@@ -48,7 +49,7 @@ func GetAllFeatureEnvironments() ([]*data.FeatureEnvironment, error) {
 		var res data.Resource
 		if err := rows.Scan(
 			&fe.ID, &fe.Name, &fe.Identifier, &fe.CreatedAt, &fe.CreatedBy,
-			&res.FeatureEnvID, &res.RepoID, &res.IsAutoUpdate, &res.Branch, &res.Link,
+			&res.FeatureEnvID, &res.RepoID, &res.IsAutoUpdate, &res.Branch, &res.Link, &res.Port,
 		); err != nil {
 			return nil, err
 		}
