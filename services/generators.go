@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/Swechhya/isol8r-backend/data"
+	"github.com/Swechhya/isol8r-backend/services/s3"
 )
 
-func GenerateDeployManifest(namespace string, dest string) error {
+func GenerateDeployManifest(namespace string, dest string, res *data.Resource) error {
 	dir := fmt.Sprintf("deploy-manifest/overlay/%s", namespace)
 
 	_, err := os.Stat(dir)
@@ -159,6 +162,14 @@ func GenerateDeployManifest(namespace string, dest string) error {
 		return err
 	}
 	err = saveYaml(filepath.Join(dir, "ns.yml"), ns)
+	if err != nil {
+		return err
+	}
+
+	bucketName := os.Getenv("PRIVATE_KEY_BUCKET")
+	fullFilePath := filepath.Join(dir, ".env")
+	client := s3.GetClient()
+	err = client.DownloadFileToPath(context.Background(), bucketName, res.Link, fullFilePath)
 	if err != nil {
 		return err
 	}

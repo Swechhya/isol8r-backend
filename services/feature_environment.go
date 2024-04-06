@@ -159,7 +159,7 @@ func CreateFeatureEnvironment(fe data.FeatureEnvironment) error {
 		if err != nil {
 			return err
 		}
-		err = GenerateDeployManifest(fe.Identifier, dest)
+		err = GenerateDeployManifest(fe.Identifier, dest, &resource)
 		if err != nil {
 			return err
 		}
