@@ -83,7 +83,6 @@ func GetRepos(ctx context.Context) ([]*data.Repo, error) {
 	}
 
 	repos := new(data.Repositories)
-
 	err = json.Unmarshal(b, repos)
 	if err != nil {
 		return nil, err
@@ -107,7 +106,7 @@ func GetRepos(ctx context.Context) ([]*data.Repo, error) {
 			goqu.Record{
 				"repo_id":    repo.Id,
 				"name":       repo.Name,
-				"full_name":  repo.Name,
+				"full_name":  repo.FullName,
 				"user_login": "",
 				"url":        repo.Url,
 			},
@@ -142,10 +141,7 @@ func GetBranches(ctx context.Context, repoId int64) ([]*github.Branch, error) {
 }
 
 func GetInstallationToken(ctx context.Context) (string, error) {
-
-	key, err := key.Parse([]byte(GetConfig("privateKey")))
-	// key, err := key.FromFile("key.pem")
-
+	key, err := key.FromFile(GetConfig("privateKeyPath"))
 	if err != nil {
 		return "", err
 	}
@@ -214,10 +210,9 @@ func saveClientConfigToDB(installID, privateKey string) error {
 
 func UploadEnvFile(c *gin.Context, file io.Reader, repoId, fileName string) (string, error) {
 	bucketName := os.Getenv("APP_ENV_BUCKET")
-	bucketKey := "envtest.png"
 
 	client := s3.GetClient()
-	uri, err := client.UploadFile(c, bucketName, bucketKey, file)
+	uri, err := client.UploadFile(c, bucketName, fileName, file)
 	if err != nil {
 		return "", err
 	}

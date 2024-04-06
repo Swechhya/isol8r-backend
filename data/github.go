@@ -10,7 +10,8 @@ type Repositories struct {
 }
 
 type Repo struct {
-	Id   int64  `json:"id"`
-	Name string `json:"name"`
-	Url  string `json:"url"`
+	Id       int64  `json:"id"`
+	Name     string `json:"name"`
+	FullName string `json:"full_name"`
+	Url      string `json:"url"`
 }

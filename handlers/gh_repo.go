@@ -87,13 +87,13 @@ func UploadEnvFile(c *gin.Context) {
 	file, err := c.FormFile("file")
 	fileName := file.Filename
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ErrorReponse(c, err)
 		return
 	}
 
 	fileReader, err := file.Open()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ErrorReponse(c, err)
 		return
 	}
 	defer fileReader.Close()
@@ -101,7 +101,7 @@ func UploadEnvFile(c *gin.Context) {
 	// Read the file into a buffer
 	fileBytes, err := ioutil.ReadAll(fileReader)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ErrorReponse(c, err)
 		return
 	}
 
