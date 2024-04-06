@@ -50,6 +50,5 @@ func setupDatabase() error {
 		log.Panicf("Error connecting to report db. Error message: %s", err)
 		return nil
 	}
-
 	return nil
 }

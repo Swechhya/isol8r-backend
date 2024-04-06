@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"fmt"
+	"os/exec"
 	"strings"
 
 	"github.com/Swechhya/isol8r-backend/data"
@@ -95,6 +96,9 @@ func GetFeatureEnvironmentById(id int) (*data.FeatureEnvironment, error) {
 }
 
 func CreateFeatureEnvironment(fe data.FeatureEnvironment) error {
+	if fe.Identifier == "" {
+		return fmt.Errorf("empty feature identifier")
+	}
 	// Insert into table
 	db := db.DB()
 	dq := goqu.Insert("feature_environments").
@@ -122,8 +126,48 @@ func CreateFeatureEnvironment(fe data.FeatureEnvironment) error {
 		return err
 	}
 
+	// ecr := GetConfig("dest")
+	// if ecr == "" {
+	// 	return fmt.Errorf("empty ecr")
+	// }
+
+	ecr := "654654451390.dkr.ecr.us-east-1.amazonaws.com/test:"
+
 	// Iterate over resources and insert them into the database
 	for _, resource := range fe.Resources {
+		dq := goqu.From("repositories").Select("full_name")
+
+		sql, args, err := dq.ToSQL()
+		for err != nil {
+			return err
+		}
+		rows, err := db.Query(sql, args...)
+		for err != nil {
+			return err
+		}
+		var repoFullName string
+		for rows.Next() {
+			if err := rows.Scan(&repoFullName); err != nil {
+				return err
+			}
+		}
+
+		repoName := strings.Split(repoFullName, "/")[1]
+		dest := fmt.Sprintf("%s%s-%s", ecr, fe.Identifier, repoName)
+
+		err = GenerateBuildManifest(fe.Identifier, repoName, resource.Branch, dest)
+		if err != nil {
+			return err
+		}
+		err = GenerateDeployManifest(fe.Identifier, dest)
+		if err != nil {
+			return err
+		}
+		err = DeployEnvironment(fe.Identifier)
+		if err != nil {
+			return err
+		}
+
 		resource.FeatureEnvID = feID
 		if err := insertResource(resource); err != nil {
 			return err
@@ -164,8 +208,8 @@ func insertResource(resource data.Resource) error {
 	db := db.DB()
 
 	dq := goqu.Insert("resources").
-		Cols("feature_environment_id", "repo_id", "branch", "is_auto_update", "link").
-		Vals(goqu.Vals{resource.FeatureEnvID, resource.RepoID, resource.Branch, resource.IsAutoUpdate, resource.Link})
+		Cols("feature_environment_id", "repo_id", "branch", "is_auto_update", "link", "port").
+		Vals(goqu.Vals{resource.FeatureEnvID, resource.RepoID, resource.Branch, resource.IsAutoUpdate, resource.Link, resource.Port})
 
 	insertSql, args, err := dq.ToSQL()
 	if err != nil {
@@ -176,6 +220,57 @@ func insertResource(resource data.Resource) error {
 		return err
 	}
 
+	return nil
+}
+
+func DeployEnvironment(namespace string) error {
+	buildManifestPath := fmt.Sprintf("build-manifest/overlay/%s", namespace)
+
+	// kubectl kustomize ./overlay/feature | kubectl apply -f -
+	err := runStartKCommand(buildManifestPath)
+	if err != nil {
+		return err
+	}
+
+	deployManifestPath := fmt.Sprintf("deploy-manifest/overlay/%s", namespace)
+	// kubectl kustomize ./overlay/feature | kubectl apply -f -
+	err = runStartKCommand(deployManifestPath)
+	if err != nil {
+		return err
+	}
+
+	// run kustomize and kubectl
+	return nil
+}
+
+func runStartKCommand(path string) error {
+	kustomizeCmd := exec.Command("kubectl", "kustomize", path)
+	applyCmd := exec.Command("kubectl", "apply", "-f", "-")
+
+	output, err := kustomizeCmd.StdoutPipe()
+	if err != nil {
+		fmt.Printf("Error creating stdout pipe for kustomize command: %v\n", err)
+		return err
+	}
+	applyCmd.Stdin = output
+
+	if err := kustomizeCmd.Start(); err != nil {
+		fmt.Printf("Error starting kustomize command: %v\n", err)
+		return err
+	}
+	if err := applyCmd.Start(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func runDeleteKCommand(namespace string) error {
+	kustomizeCmd := exec.Command("kubectl", "delete", namespace)
+
+	if err := kustomizeCmd.Start(); err != nil {
+		fmt.Printf("Error deleting kustomize command: %v\n", err)
+		return err
+	}
 	return nil
 }
 

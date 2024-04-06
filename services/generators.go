@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 )
 
-func GenerateDeployManifest(branch string) error {
-	dir := fmt.Sprintf("deploy-manifest/overlay/%s", branch)
+func GenerateDeployManifest(namespace string, dest string) error {
+	dir := fmt.Sprintf("deploy-manifest/overlay/%s", namespace)
 
 	_, err := os.Stat(dir)
 	if err == nil {
@@ -26,15 +26,16 @@ func GenerateDeployManifest(branch string) error {
 	// os.Chdir(dir)
 
 	kustomize := KustomizationConfig{
-		Namespace: branch,
-		Resources: []string{"../../base"},
+		Namespace: namespace,
+		Resources: []string{"../../base", "ns.yml"},
 		Patches: []Resource{
 			{Path: "deployment.yml"},
 			{Path: "service.yml"},
+			{Path: "ingress.yml"},
 		},
 		ConfigMapGenerator: []Environment{
 			{
-				Name: branch,
+				Name: namespace,
 				Envs: []string{".env"},
 			},
 		},
@@ -59,10 +60,11 @@ func GenerateDeployManifest(branch string) error {
 					Containers: []Container{
 						{
 							Name:  "feature",
-							Image: "nginx:1.14.2",
+							Image: dest,
 							Ports: []ContainerPort{
 								{
-									ContainerPort: 80,
+									ContainerPort: 3000,
+									Name:          "http",
 								},
 							},
 						},
@@ -84,8 +86,10 @@ func GenerateDeployManifest(branch string) error {
 			},
 			Ports: []Port{
 				{
-					Name: "http",
-					Port: 80,
+					Name:       "http",
+					Port:       3000,
+					TargetPort: "http",
+					Protocol:   "TCP",
 				},
 			},
 		},
@@ -100,7 +104,31 @@ func GenerateDeployManifest(branch string) error {
 		Spec: Spec{
 			Rules: []Rule{
 				{
-					Host: fmt.Sprintf("%s.demo.prajeshpradhan.com.np", branch),
+					Host: fmt.Sprintf("%s.demo.prajeshpradhan.com.np", namespace),
+					Http: Http{
+						Paths: []Path{
+							{
+								Path:     "/",
+								PathType: "Prefix",
+								Backend: Backend{
+									Service: BackendService{
+										ServiceName: "ssl-redirect",
+										Port:        Port{Name: "use-annotation"},
+									},
+								},
+							},
+							{
+								Path:     "/",
+								PathType: "Prefix",
+								Backend: Backend{
+									Service: BackendService{
+										ServiceName: "web-service",
+										Port:        Port{Name: "http"},
+									},
+								},
+							},
+						},
+					},
 				},
 			},
 		},
@@ -110,7 +138,7 @@ func GenerateDeployManifest(branch string) error {
 		APIVersion: "v1",
 		Kind:       "Namespace",
 		Metadata: Metadata{
-			Name: branch,
+			Name: namespace,
 		},
 	}
 
@@ -138,8 +166,8 @@ func GenerateDeployManifest(branch string) error {
 	return nil
 }
 
-func GenerateBuildManifest(branch string) error {
-	dir := fmt.Sprintf("./build-manifest/overlay/%s", branch)
+func GenerateBuildManifest(namespace string, repoFullName string, branch string, dest string) error {
+	dir := fmt.Sprintf("./build-manifest/overlay/%s", namespace)
 
 	_, err := os.Stat(dir)
 	if err == nil {
@@ -154,17 +182,27 @@ func GenerateBuildManifest(branch string) error {
 		return err
 	}
 
-	// os.Chdir(dir)
+	gitPass, err := GetInstallationToken(context.Background())
+	if err != nil {
+		return err
+	}
 
-	// gitPass := GetConfig("")
-	gitPass, _ := GetInstallationToken(context.Background())
-	dest := "dest-tag"
-	repoUrl := "git://github.com/Swechhya/ci-cd-demo.git"
+	// ecr := GetConfig("dest")
+	// if ecr == "" {
+	// 	return fmt.Errorf("empty ecr")
+	// }
+
+	// ecr := "654654451390.dkr.ecr.us-east-1.amazonaws.com/test:"
+
+	// repoName := strings.Split(repoFullName, "/")[1]
+	// dest := fmt.Sprintf("%s%s-%s", ecr, namespace, repoName)
+	repoUrl := fmt.Sprintf("git://github.com/%s.git#refs/heads/%s", repoFullName, branch)
 
 	kustomize := KustomizationConfig{
-		Namespace: branch,
+		Namespace: namespace,
 		Resources: []string{
 			"../../base",
+			"ns.yml",
 		},
 		Patches: []Resource{
 			{Path: "pod.yml"},
@@ -219,7 +257,7 @@ func GenerateBuildManifest(branch string) error {
 		APIVersion: "v1",
 		Kind:       "Namespace",
 		Metadata: Metadata{
-			Name: branch,
+			Name: namespace,
 		},
 	}
 

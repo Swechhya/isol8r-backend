@@ -5,6 +5,4 @@ metadata:
 spec:
   selector:
     app: web
-  ports:
-  - name: http
-    port: 80
+  type: NodePort

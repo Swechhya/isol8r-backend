@@ -20,6 +20,7 @@ type Resource struct {
 	IsAutoUpdate bool   `json:"isAutoUpdate"`
 	Branch       string `json:"branch"`
 	Link         string `json:"link"`
+	Port         int    `json:"port"`
 }
 
 type Commit struct {
