@@ -21,9 +21,8 @@ func FEGetRepoHandler(c *gin.Context) {
 func FEListHandler(c *gin.Context) {
 	fe, err := services.GetAllFeatureEnvironments()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status": "ERROR",
-		})
+		ErrorReponse(c, err)
+		return
 	}
 
 	SuccessResponse(c, fe)
