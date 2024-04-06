@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"bytes"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -54,4 +56,30 @@ func GetBranches(c *gin.Context) {
 		ErrorReponse(c, err)
 	}
 	SuccessResponse(c, branches)
+}
+
+func UploadEnvFile(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	fileReader, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer fileReader.Close()
+
+	// Read the file into a buffer
+	fileBytes, err := ioutil.ReadAll(fileReader)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := services.UploadEnvFile(c, bytes.NewReader(fileBytes)); err != nil {
+		return
+	}
 }
