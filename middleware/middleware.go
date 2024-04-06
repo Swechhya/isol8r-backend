@@ -38,10 +38,10 @@ func RcoveryHandler() gin.HandlerFunc {
 				}
 				if err != nil {
 
-					log.Fatal("PANIC: %s", err.Error())
+					log.Fatalf("PANIC: %s", err.Error())
 
 					if etrace := debug.Stack(); etrace != nil {
-						log.Fatal("STACKTRACE: %s", etrace)
+						log.Fatalf("STACKTRACE: %s", etrace)
 					}
 				}
 				c.JSON(http.StatusInternalServerError, gin.H{
