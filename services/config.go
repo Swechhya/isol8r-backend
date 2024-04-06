@@ -3,7 +3,7 @@ package services
 import (
 	"os"
 
-	"github.com/Swechhya/panik-backend/internal/db"
+	"github.com/Swechhya/isol8r-backend/internal/db"
 	"github.com/doug-martin/goqu/v9"
 	"gopkg.in/yaml.v3"
 )

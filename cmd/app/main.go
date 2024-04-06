@@ -3,9 +3,9 @@ package main
 import (
 	"net/http"
 
-	"github.com/Swechhya/panik-backend/handlers"
-	"github.com/Swechhya/panik-backend/middleware"
-	"github.com/Swechhya/panik-backend/setup"
+	"github.com/Swechhya/isol8r-backend/handlers"
+	"github.com/Swechhya/isol8r-backend/middleware"
+	"github.com/Swechhya/isol8r-backend/setup"
 	"github.com/gin-gonic/gin"
 )
 

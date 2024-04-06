@@ -3,8 +3,8 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/Swechhya/panik-backend/data"
-	"github.com/Swechhya/panik-backend/services"
+	"github.com/Swechhya/isol8r-backend/data"
+	"github.com/Swechhya/isol8r-backend/services"
 	"github.com/gin-gonic/gin"
 )
 

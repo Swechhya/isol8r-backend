@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Swechhya/panik-backend/data"
-	"github.com/Swechhya/panik-backend/internal/db"
-	"github.com/Swechhya/panik-backend/services/s3"
+	"github.com/Swechhya/isol8r-backend/data"
+	"github.com/Swechhya/isol8r-backend/internal/db"
+	"github.com/Swechhya/isol8r-backend/services/s3"
 	"github.com/beatlabs/github-auth/app/inst"
 	"github.com/beatlabs/github-auth/jwt"
 	"github.com/beatlabs/github-auth/key"

@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/Swechhya/panik-backend/internal/db"
-	"github.com/Swechhya/panik-backend/services"
+	"github.com/Swechhya/isol8r-backend/internal/db"
+	"github.com/Swechhya/isol8r-backend/services"
 	"github.com/joho/godotenv"
 )
 

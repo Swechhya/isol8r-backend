@@ -1,4 +1,4 @@
-module github.com/Swechhya/panik-backend
+module github.com/Swechhya/isol8r-backend
 
 go 1.21.7
 
