@@ -31,6 +31,7 @@ func main() {
 	//feature-enviroment-handler
 	featureEnvironment := router.Group("/fe")
 	{
+		featureEnvironment.GET("/repos", handlers.FEGetRepoHandler)
 		featureEnvironment.GET("/list", handlers.FEListHandler)
 		featureEnvironment.POST("/create", handlers.FECreateHandler)
 		featureEnvironment.POST("/delete/:id", handlers.FEDeleteHandler)

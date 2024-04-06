@@ -9,6 +9,8 @@ import (
 	"github.com/Swechhya/isol8r-backend/data"
 	"github.com/Swechhya/isol8r-backend/internal/db"
 	"github.com/doug-martin/goqu/v9"
+	"github.com/gin-gonic/gin"
+	"github.com/google/go-github/github"
 )
 
 func GetAllFeatureEnvironments() ([]*data.FeatureEnvironment, error) {
@@ -177,4 +179,56 @@ func insertResource(resource data.Resource) error {
 	}
 
 	return nil
+}
+
+func FetchLaunchReadyRepos(c *gin.Context) ([]*data.ReadyRepositories, error) {
+	db := db.DB()
+
+	query := goqu.From("repositories").Select("id", "repo_id", "name", "full_name", "url", "setup", "env_uri").
+		Where(goqu.Ex{"setup": true})
+	selectSQL, _, err := query.ToSQL()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := db.Query(selectSQL)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var repoLists []*data.ReadyRepositories
+
+	for rows.Next() {
+		var repo data.ReadyRepositories
+		if err := rows.Scan(&repo.ID, &repo.RepoID, &repo.Name, &repo.FullName, &repo.URL, &repo.Setup, &repo.EnvURI); err != nil {
+			return nil, err
+		}
+
+		branches, err := GetBranches(c.Request.Context(), int64(repo.RepoID))
+		if err != nil {
+			return nil, err
+		}
+
+		repo.Branch = ConvertToDataBranches(branches)
+		repoLists = append(repoLists, &repo)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// If successful, return the list of launch ready repos
+	return repoLists, err
+}
+
+func ConvertToDataBranches(ghBranches []*github.Branch) []*data.Branch {
+	var dataBranches []*data.Branch
+	for _, b := range ghBranches {
+		dataBranches = append(dataBranches, &data.Branch{
+			Name:      *b.Name,
+			Commit:    data.Commit{SHA: *b.Commit.SHA, URL: *b.Commit.URL},
+			Protected: *b.Protected,
+		})
+	}
+	return dataBranches
 }

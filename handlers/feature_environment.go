@@ -9,11 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AppListHandler(c *gin.Context) {
-
-	c.JSON(http.StatusOK, gin.H{
-		"status": "OK",
-	})
+func FEGetRepoHandler(c *gin.Context) {
+	repos, err := services.FetchLaunchReadyRepos(c)
+	if err != nil {
+		ErrorReponse(c, err)
+	}
+	SuccessResponse(c, repos)
 }
 
 func FEListHandler(c *gin.Context) {
@@ -73,8 +74,6 @@ func FERedeployHandler(c *gin.Context) {
 }
 
 func FEEditHandler(c *gin.Context) {
-	// TODO: DELETE FEATURE ENV
-
 	// Recreate feature env
 	var fe data.FeatureEnvironment
 	if err := c.ShouldBindJSON(&fe); err != nil {
