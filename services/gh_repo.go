@@ -14,7 +14,6 @@ import (
 	"github.com/beatlabs/github-auth/app/inst"
 	"github.com/beatlabs/github-auth/jwt"
 	"github.com/beatlabs/github-auth/key"
-	"github.com/doug-martin/goqu/v9"
 	"github.com/google/go-github/github"
 )
 
@@ -26,8 +25,8 @@ type GitHubClient struct {
 var Gh *GitHubClient
 var User *github.User
 
-func SetupGithubClient(config *data.GithubClientSetup) error {
-	key, err := key.FromFile("./key.pem")
+func SetupGithubClient(ctx context.Context, config *data.GithubClientSetup) error {
+	key, err := key.Parse([]byte(config.PrivateKey))
 	if err != nil {
 		return err
 	}
@@ -43,12 +42,15 @@ func SetupGithubClient(config *data.GithubClientSetup) error {
 		return err
 	}
 
-	err = saveClientConfigToDB(installID, privateKey)
+	err = AddConfig("installID", installID)
+	if err != nil {
+		return err
+	}
+	err = AddConfig("privateKey", privateKey)
 	if err != nil {
 		return err
 	}
 
-	ctx := context.Background()
 	httpClient := install.Client(ctx)
 	client := github.NewClient(httpClient)
 
@@ -103,7 +105,7 @@ func GetBranches(ctx context.Context, repo string) ([]*github.Branch, error) {
 
 func GetInstallationToken(ctx context.Context) (string, error) {
 
-	key, err := key.FromFile("./key.pem")
+	key, err := key.Parse([]byte(GetConfig("privateKey")))
 	if err != nil {
 		return "", err
 	}
@@ -114,7 +116,7 @@ func GetInstallationToken(ctx context.Context) (string, error) {
 	}
 
 	client := &http.Client{}
-	req, err := http.NewRequest("POST", fmt.Sprintf("https://api.github.com/app/installations/%s/access_tokens", "install_id"), nil)
+	req, err := http.NewRequest("POST", fmt.Sprintf("https://api.github.com/app/installations/%s/access_tokens", GetConfig("installID")), nil)
 	if err != nil {
 		return "", nil
 	}
@@ -144,25 +146,4 @@ func GetInstallationToken(ctx context.Context) (string, error) {
 	}
 
 	return token.Token, nil
-}
-
-func saveClientConfigToDB(installID, privateKey string) error {
-	db := db.DB()
-
-	dq := goqu.Insert("core_config").
-		Cols("key", "value").
-		Vals(goqu.Vals{"installID", installID},
-			goqu.Vals{"privateKey", privateKey},
-		)
-
-	insertSql, args, err := dq.ToSQL()
-	if err != nil {
-		return err
-	}
-	_, err = db.Exec(insertSql, args...)
-
-	if err != nil {
-		return err
-	}
-	return nil
 }

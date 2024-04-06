@@ -28,7 +28,7 @@ func SetupGithub(c *gin.Context) {
 		return
 	}
 
-	err := services.SetupGithubClient(config)
+	err := services.SetupGithubClient(c.Request.Context(), config)
 	if err != nil {
 		ErrorReponse(c, err)
 		return

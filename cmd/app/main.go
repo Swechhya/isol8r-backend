@@ -1,10 +1,12 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/Swechhya/panik-backend/handlers"
 	"github.com/Swechhya/panik-backend/internal/db"
+	"github.com/Swechhya/panik-backend/services"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,7 +16,12 @@ func main() {
 	// fmt.Println(d)
 	err := Setup()
 	if err != nil {
-		return
+		log.Panic("Unable to setup DB")
+	}
+
+	err = services.LoadConfigOnInitialSetup()
+	if err != nil {
+		log.Panic("Unable to load config")
 	}
 
 	router := gin.Default()

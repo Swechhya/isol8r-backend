@@ -15,7 +15,7 @@ func ConfigHandler(c *gin.Context) {
 		return
 	}
 
-	if err := services.AddNewConfig(config); err != nil {
+	if err := services.AddConfig(config.Key, config.Value); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
