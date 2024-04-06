@@ -86,6 +86,26 @@ func GetAllFeatureEnvironments() ([]*data.FeatureEnvironment, error) {
 	return envLists, nil
 }
 
+func GetFeatureEnvironmentById(id int) (*data.FeatureEnvironment, error) {
+	query := goqu.From("feature_environments").
+		Select("name", "identifier", "description", "db_type", "created_at", "created_by").
+		Where(goqu.Ex{"id": id})
+
+	selectSQL, _, err := query.ToSQL()
+	if err != nil {
+		return nil, err
+	}
+
+	fe := new(data.FeatureEnvironment)
+	err = db.DB().QueryRow(selectSQL).Scan(&fe.Name, &fe.Identifier, &fe.Description, &fe.DBType, &fe.CreatedAt, &fe.CreatedBy)
+	if err != nil {
+		return nil, err
+	}
+
+	return fe, nil
+
+}
+
 func CreateFeatureEnvironment(fe data.FeatureEnvironment) error {
 	// Insert into table
 	db := db.DB()
