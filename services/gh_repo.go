@@ -29,7 +29,7 @@ var Gh *GitHubClient
 var User *github.User
 
 func SetupGithubClient(ctx context.Context, config *data.GithubClientSetup) error {
-	key, err := key.Parse([]byte(config.PrivateKey))
+	key, err := key.FromFile(config.PrivateKey)
 	if err != nil {
 		return err
 	}
