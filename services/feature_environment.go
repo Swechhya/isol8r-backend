@@ -327,9 +327,16 @@ func runStartKCommand(path string) error {
 		fmt.Printf("Error starting kustomize command: %v\n", err)
 		return err
 	}
-	if err := applyCmd.Start(); err != nil {
+	// if err := applyCmd.Start(); err != nil {
+	// 	return err
+	// }
+	o, err := applyCmd.Output()
+	if err != nil {
+		fmt.Println(o)
 		return err
 	}
+	fmt.Println(o)
+
 	return nil
 }
 
