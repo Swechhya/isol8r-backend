@@ -218,7 +218,7 @@ func UploadEnvFile(c *gin.Context, file io.Reader, repoId, fileName string) (str
 	}
 
 	// Update repository in the database
-	if err := updateRepository(repoId, *uri); err != nil {
+	if err := updateRepository(repoId, fileName); err != nil {
 		return "", err
 	}
 

@@ -183,7 +183,7 @@ func CreateFeatureEnvironment(fe data.FeatureEnvironment, reDeploy bool) (int, e
 
 	// Iterate over resources and insert them into the database
 	for _, resource := range fe.Resources {
-		dq := goqu.From("repositories").Select("full_name")
+		dq := goqu.From("repositories").Select("full_name", "env_uri")
 
 		sql, args, err := dq.ToSQL()
 		for err != nil {
@@ -193,9 +193,9 @@ func CreateFeatureEnvironment(fe data.FeatureEnvironment, reDeploy bool) (int, e
 		for err != nil {
 			return 0, err
 		}
-		var repoFullName string
+		var repoFullName, envUri string
 		for rows.Next() {
-			if err := rows.Scan(&repoFullName); err != nil {
+			if err := rows.Scan(&repoFullName, &envUri); err != nil {
 				return 0, err
 			}
 		}
@@ -207,7 +207,7 @@ func CreateFeatureEnvironment(fe data.FeatureEnvironment, reDeploy bool) (int, e
 		if err != nil {
 			return 0, err
 		}
-		err = GenerateDeployManifest(fe.Identifier, dest, &resource)
+		err = GenerateDeployManifest(fe.Identifier, dest, envUri)
 		if err != nil {
 			return 0, err
 		}
