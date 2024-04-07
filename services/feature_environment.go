@@ -203,7 +203,7 @@ func CreateFeatureEnvironment(fe data.FeatureEnvironment, reDeploy bool) (int, e
 		repoName := strings.Split(repoFullName, "/")[1]
 		dest := fmt.Sprintf("%s%s-%s", ecr, fe.Identifier, repoName)
 
-		err = GenerateBuildManifest(fe.Identifier, repoName, resource.Branch, dest)
+		err = GenerateBuildManifest(fe.Identifier, repoFullName, resource.Branch, dest)
 		if err != nil {
 			return 0, err
 		}
