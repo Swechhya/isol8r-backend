@@ -193,6 +193,9 @@ func CreateFeatureEnvironment(fe data.FeatureEnvironment, reDeploy bool) (int, e
 		for err != nil {
 			return 0, err
 		}
+
+		defer rows.Close()
+
 		var repoFullName, envUri string
 		for rows.Next() {
 			if err := rows.Scan(&repoFullName, &envUri); err != nil {
@@ -237,6 +240,8 @@ func DeleteFeatureEnvironment(feID int) error {
 	for err != nil {
 		return err
 	}
+
+	defer rows.Close()
 	var identifier string
 	for rows.Next() {
 		if err := rows.Scan(&identifier); err != nil {

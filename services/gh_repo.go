@@ -141,21 +141,23 @@ func GetBranches(ctx context.Context, repoId int64) ([]*github.Branch, error) {
 }
 
 func GetInstallationToken(ctx context.Context) (string, error) {
-	key, err := key.FromFile(GetConfig("privateKeyPath"))
+	// key, err := key.FromFile(GetConfig("privateKeyPath"))
+
+	key, err := key.FromFile("key.pem")
 	if err != nil {
 		return "", err
 	}
-	jt := jwt.JWT{AppID: GetConfig("appID"), PrivateKey: key, Expires: time.Minute * 10}
+	// jt := jwt.JWT{AppID: GetConfig("appID"), PrivateKey: key, Expires: time.Minute * 10}
 
-	// jt := jwt.JWT{AppID: "870502", PrivateKey: key, Expires: time.Minute * 10}
+	jt := jwt.JWT{AppID: "870502", PrivateKey: key, Expires: time.Minute * 10}
 	je, err := jt.Payload()
 	if err != nil {
 		return "", err
 	}
 
 	client := &http.Client{}
-	req, err := http.NewRequest("POST", fmt.Sprintf("https://api.github.com/app/installations/%s/access_tokens", GetConfig("installID")), nil)
-	// req, err := http.NewRequest("POST", fmt.Sprintf("https://api.github.com/app/installations/%s/access_tokens", "49284279"), nil)
+	// req, err := http.NewRequest("POST", fmt.Sprintf("https://api.github.com/app/installations/%s/access_tokens", GetConfig("installID")), nil)
+	req, err := http.NewRequest("POST", fmt.Sprintf("https://api.github.com/app/installations/%s/access_tokens", "49284279"), nil)
 	if err != nil {
 		return "", nil
 	}
