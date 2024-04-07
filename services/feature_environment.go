@@ -184,7 +184,7 @@ func CreateFeatureEnvironment(fe data.FeatureEnvironment, reDeploy bool) (int, e
 
 	// Iterate over resources and insert them into the database
 	for _, resource := range fe.Resources {
-		dq := goqu.From("repositories").Select("full_name", "env_uri")
+		dq := goqu.From("repositories").Select("full_name", "env_uri").Where(goqu.I("repo_id").Eq(resource.RepoID))
 
 		sql, args, err := dq.ToSQL()
 		for err != nil {
@@ -341,12 +341,12 @@ func runStartKCommand(path string) error {
 	// if err := applyCmd.Start(); err != nil {
 	// 	return err
 	// }
-	o, err := applyCmd.Output()
-	if err != nil {
-		fmt.Println(o)
-		return err
-	}
-	fmt.Println(o)
+	o, _ := applyCmd.Output()
+	// if err != nil {
+	// 	fmt.Println(string(o))
+	// 	return err
+	// }
+	fmt.Println(string(o))
 
 	return nil
 }
