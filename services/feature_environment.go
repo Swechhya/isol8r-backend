@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"runtime/debug"
 	"strings"
 
 	"github.com/Swechhya/isol8r-backend/data"
@@ -251,6 +252,7 @@ func DeleteFeatureEnvironment(feID int) error {
 
 	err = runDeleteKCommand(identifier)
 	if err != nil {
+		fmt.Println("Err: "+err.Error(), string(debug.Stack()))
 		return err
 	}
 
@@ -303,6 +305,8 @@ func DeployEnvironment(namespace string) error {
 	// kubectl kustomize ./overlay/feature | kubectl apply -f -
 	err := runStartKCommand(buildManifestPath)
 	if err != nil {
+
+		fmt.Println("Err: "+err.Error(), string(debug.Stack()))
 		return err
 	}
 
@@ -310,6 +314,8 @@ func DeployEnvironment(namespace string) error {
 	// kubectl kustomize ./overlay/feature | kubectl apply -f -
 	err = runStartKCommand(deployManifestPath)
 	if err != nil {
+
+		fmt.Println("Err: "+err.Error(), string(debug.Stack()))
 		return err
 	}
 
