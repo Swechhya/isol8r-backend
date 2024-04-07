@@ -247,7 +247,7 @@ func DeleteFeatureEnvironment(feID int) error {
 
 	err = runDeleteKCommand(identifier)
 	if err != nil {
-		fmt.Println("Err: "+err.Error(), debug.Stack())
+		fmt.Println("Err: "+err.Error(), string(debug.Stack()))
 		return err
 	}
 
@@ -301,7 +301,7 @@ func DeployEnvironment(namespace string) error {
 	err := runStartKCommand(buildManifestPath)
 	if err != nil {
 
-		fmt.Println("Err: "+err.Error(), debug.Stack())
+		fmt.Println("Err: "+err.Error(), string(debug.Stack()))
 		return err
 	}
 
@@ -310,7 +310,7 @@ func DeployEnvironment(namespace string) error {
 	err = runStartKCommand(deployManifestPath)
 	if err != nil {
 
-		fmt.Println("Err: "+err.Error(), debug.Stack())
+		fmt.Println("Err: "+err.Error(), string(debug.Stack()))
 		return err
 	}
 
